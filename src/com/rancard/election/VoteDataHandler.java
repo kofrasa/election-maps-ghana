@@ -13,9 +13,6 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.*;
 
-import org.javatuples.Decade;
-import org.javatuples.Quartet;
-
 import com.google.api.services.fusiontables.model.Table;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
