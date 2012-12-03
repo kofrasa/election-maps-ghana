@@ -358,9 +358,15 @@ var candidatesNames = {
 	'PPP': 'Papa Kwesi Nduom',	
 	'PNC': 'Hassan Ayariga',
 	'CPP': 'Abu Sakara Foster',
+<<<<<<< HEAD
 	'INDP': 'Jacob Osei Yeboah',
 	'GCPP': 'Herbert Lartey',
 	'UFP': 'Akwasi Addai Odike',
+=======
+	'INDP': 'John Dramani Mahama',
+	'GCPP': 'John Dramani Mahama',
+	'UFP': 'John Dramani Mahama',
+>>>>>>> 5b27851ea56f0e0dda014fc1dc0941bc8533c5ae
 };
 
 var regions = {
@@ -543,6 +549,7 @@ function formatTip( feature ) {
 	return contentString;*/
 	
 }
+<<<<<<< HEAD
 
 function moveTip( event ) {	
 	if(!currentFeature){
@@ -584,6 +591,49 @@ function moveTip( event ) {
 	$maptip.css({ left:x, top:y });
 }
 
+=======
+
+function moveTip( event ) {	
+	if(!currentFeature){
+		showTip( false );
+	}
+	if( ! tipHtml ) return;
+	/*if( touch ) {
+		if( ! touch.moveTip ) return;
+		delete touch.moveTip;
+	}*/
+	var x = event.pageX, y = event.pageY;
+	if(
+		x < mapPixBounds.left  ||
+		x >= mapPixBounds.right  ||
+		y < mapPixBounds.top  ||
+		y >= mapPixBounds.bottom
+	) {
+		showTip( false );
+	}
+	x += tipOffset.x;
+	y += tipOffset.y;
+	var pad = 2;
+	var width = $maptip.width(), height = $maptip.height();
+	var offsetLeft = width + tipOffset.x * 2;
+	var offsetTop = height + tipOffset.y * 2;
+	
+	if( x + width > ww - pad ) {
+		x -= width + pad + tipOffset.x * 2;
+	}
+	if( x < pad ) {
+		x = pad;
+	}
+	
+	if( y + height > wh - pad )
+		y -= height + pad + tipOffset.y * 2;
+	if( y < pad )
+		y = wh - pad - height - tipOffset.y * 2;
+	
+	$maptip.css({ left:x, top:y });
+}
+
+>>>>>>> 5b27851ea56f0e0dda014fc1dc0941bc8533c5ae
 function showTip( feature ) {
 	tipHtml = formatTip( feature );
 	if( tipHtml ) {
