@@ -1,4 +1,3 @@
-
 package com.rancard.election;
 
 import java.io.IOException;
@@ -6,26 +5,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.http.*;
-
-import com.google.api.services.fusiontables.model.Table;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.datastore.Text;
 import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gson.Gson;
-import com.rancard.election.common.FusiontablesHandler;
 import com.rancard.election.common.SpreadsheetHandler;
 
 @SuppressWarnings("serial")
@@ -33,6 +28,7 @@ public class VoteDataHandler extends HttpServlet {
 
 	private static final String REGION = "REGION";
 	private static final String CONSTITUENCY = "CONSTITUENCY";
+	Logger logger = Logger.getLogger(VoteDataHandler.class.toString());
 
 	private static Set<String> dataKinds = new HashSet<String>(Arrays.asList(new String[] {
 		"presidential-overview", 
@@ -42,11 +38,8 @@ public class VoteDataHandler extends HttpServlet {
 	}));	
 
 	private enum Worksheet {
-		PRESIDENTIAL("Presidential", new String[] { "REGION", "CONSTITUENCY",
-				"NDC", "GCPP", "NPP", "PPP", "UFP", "PNC", "CPP", "INDP" }), 
-		PALIAMENTARY(
-				"Paliamentary", new String[] { "REGION", "CONSTITUENCY",
-						"CANDIDATE", "PARTY", "RESULT" });
+		PRESIDENTIAL("Presidential", new String[] { "REGION", "CONSTITUENCY","NDC", "GCPP", "NPP", "PPP", "UFP", "PNC", "CPP", "INDP" }), 
+		PALIAMENTARY("Paliamentary", new String[] { "REGION", "CONSTITUENCY","CANDIDATE", "PARTY", "RESULT" });
 
 		private final String sheetName;
 		private final String[] sheetColumns;
@@ -69,7 +62,7 @@ public class VoteDataHandler extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
 
-		Logger logger = Logger.getLogger(VoteDataHandler.class.toString());
+		
 
 		String action = req.getParameter("action");
 		String value = req.getParameter("value");
@@ -84,7 +77,7 @@ public class VoteDataHandler extends HttpServlet {
 			value = value == null? "" : value.toLowerCase();
 			action = action == null? "" : action.toLowerCase();
 
-			//logger.debug("Parameters: value = ")
+			logger.log(Level.WARNING, "Parameters: value = "+value+" action = "+action);
 
 			if ("get".equalsIgnoreCase(action)) {
 
@@ -118,27 +111,30 @@ public class VoteDataHandler extends HttpServlet {
 	private String convertEntitiesToJSON(Iterable<Entity> entities, String value){
 		StringBuilder json = new StringBuilder();
 		if("presidential-overview".equals(value)) {
+			logger.log(Level.WARNING, "Parameters: value = "+value);
 			json.append("{");
 			for(Entity e: entities) {
+				logger.log(Level.WARNING, "Parameters: region = "+e.getProperties().get(REGION));
 				Map<String,Object> map = e.getProperties();
-				json.append("\"" + map.get(REGION) + "\":{");				
+				json.append("\"" + map.get(REGION) + "\":{");
+				//map.remove(REGION);
 				for(String key: map.keySet()) {
-					if (key.equals(REGION)) {
+					if(key.equals(REGION)){
 						continue;
 					}
 					json.append("\"" + key + "\":");
-					json.append(map.get(key)).append(",");						
+					json.append(Integer.valueOf(map.get(key).toString())).append(",");										
 				}
 				json.deleteCharAt(json.length()-1);
 				json.append("},");					
 			}
 			json.deleteCharAt(json.length()-1);
 			json.append("}");
-
 		} else if ("presidential-constituency".equals(value)) {
 			Map<String,Object> table = new HashMap<String,Object>();
 			Map<String,Object> region;
 			Map<String,Object> constituency;
+			
 			for (Entity e: entities) {		
 				Map<String,Object> map = e.getProperties();
 				// get region
@@ -153,9 +149,10 @@ public class VoteDataHandler extends HttpServlet {
 					constituency = new HashMap<String,Object>();
 					region.put(map.get(CONSTITUENCY).toString(), constituency);
 				}
+				
 				// store party results
 				for (String party: map.keySet()) {
-					if (party.equals(REGION) || party.equals(CONSTITUENCY)) {
+					if(party.equals(REGION)||party.equals(CONSTITUENCY)){
 						continue;
 					}
 					constituency.put(party, Integer.valueOf(map.get(party).toString()));
