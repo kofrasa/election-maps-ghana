@@ -86,7 +86,7 @@ document.write(
 		'div.scroller::-webkit-scrollbar-thumb:horizontal { border-width:0; border-bottom:1px; border-top:6px; }',
 		'div.scroller::-webkit-scrollbar-track:hover { -webkit-box-shadow:inset 1px 0 0 rgba(0,0,0,.1); background-color:rgba(0,0,0,.05); }',
 		'div.scroller::-webkit-scrollbar-track:active { -webkit-box-shadow:inset 1px 0 0 rgba(0,0,0,.14),inset -1px -1px 0 rgba(0,0,0,.07); background-color:rgba(0,0,0,.05); }',
-		'#maptip { z-index:10; border:1px solid #333; background:white; color:#222; white-space: nowrap; width:300px; }',
+		'#maptip { position:absolute; z-index:10; border:1px solid #333; background:white; color:#222; white-space: nowrap; display:none; width:300px; }',
 		'div.candidate-name { line-height:1em; }',
 		'div.first-name { font-size:85%; }',
 		'#election-title { padding-left:3px; }',
@@ -190,7 +190,7 @@ document.write(
 	'</div>'
 );
 
-var presidentialResult = {"presidentialoverview" : [{"NDC":"8","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"GREATER ACCRA","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"NORTHERN REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"ASHANTI REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"BRONG_AHAFO REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"CENTRAL REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"EASTERN REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"VOLTA REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"WESTERN REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"UPPER EAST","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"UPPER WEST","INDP":"0"}]};
+var presidentialResult = {"presidentialoverview" : [{"NDC":"8","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"GREATER ACCRA","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"NORTHERN REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"ASHANTI REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"BRONG AHAFO REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"CENTRAL REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"EASTERN REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"VOLTA REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"WESTERN REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"UPPER EAST","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"UPPER WEST","INDP":"0"}]};
 //$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get", function(data){
 //	presidentialResult = data;
 //});
@@ -352,15 +352,15 @@ function getAbbr(feature) {
 	return abbr[feature.geojsonProperties.ID];
 }
 
-var candidates = {
+var candidatesNames = {
 	'NDC': 'John Dramani Mahama',
-	'NPP': 'Nana Akofu Addo',
-	'GCPP': 'John Dramani Mahama',
-	'PPP': 'John Dramani Mahama',
-	'UFP': 'John Dramani Mahama',
-	'PNC': 'John Dramani Mahama',
-	'CPP': 'John Dramani Mahama',
+	'NPP': 'Nana Addo Dankwa Akufo-Addo',	
+	'PPP': 'Papa Kwesi Nduom',	
+	'PNC': 'Hassan Ayariga',
+	'CPP': 'Abu Sakara Foster',
 	'INDP': 'John Dramani Mahama',
+	'GCPP': 'John Dramani Mahama',
+	'UFP': 'John Dramani Mahama',
 };
 
 var regions = {
@@ -416,7 +416,7 @@ var contentString = '<div id="content">'+
 
 
 function createInfoContent1(region){
-	var contentString = '<div id="maptip"><div class="tiptitlebar">'
+	var contentString = '<div class="tiptitlebar">'
 	    +'<div style="float:left;">'
 	    +'<span class="tiptitletext">'+region+'</span>'
 	    +'</div><div style="clear:left;">'
@@ -446,11 +446,25 @@ function createInfoContent1(region){
     +'<td style="text-align:right; padding-left:6px;"> <div class="candidate-percent">3.5%</div>'
     +'<div class="candidate-votes">8,398</div></td><td class="right" style="text-align:right; padding-left:6px;">'
     +'<div class="candidate-delegates"></div></td></tr></tbody></table></div>'
-    +'<div class="click-for-local faint-text">Click for detailed results</div></div>';
+    +'<div class="click-for-local faint-text">Click for detailed results</div>';
 	return contentString;
 }
+
+function sortCandidates(candidates){
+	var cand = [];
+	for(var k in candidates){
+		if(k.toString() === "REGION"){
+			continue;
+		}
+		cand.push([k.toString(), candidates[k]])
+	}
+	return cand;
+}
+
 function createInfoContent(region){
-	var contentString = '<div id="maptip"><div class="tiptitlebar">'
+	var candidates = sortCandidates(region);
+	
+	var contentString = '<div class="tiptitlebar">'
 	    +'<div style="float:left;">'
 	    +'<span class="tiptitletext">'+region.REGION+'</span>'
 	    +'</div><div style="clear:left;">'
@@ -458,7 +472,21 @@ function createInfoContent(region){
 	    +'<table class="candidates" cellpadding="0" cellspacing="0">'
 	    +'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>'
 	    +'<th style="text-align:right; padding-bottom:4px;">Votes</th>'
-	    +'<th style="text-align:right; padding-bottom:4px;"></th></tr></tbody></table>'
+	    +'<th style="text-align:right; padding-bottom:4px;"></th></tr>'   
+		
+	    for(var c in candidates){
+	    	var candidateName = candidatesNames[candidates[c][0]];	    	
+	    	contentString = contentString + '<tr class="legend-candidate first" id="legend-candidate-"'+candidateName+'><td class="left"></td>';	    	
+	    	contentString = contentString + '<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">'+candidateName.split(' ')[0]+'</div>';
+	    	contentString = contentString + '<div class="last-name" style="font-weight:bold;">'+candidateName.split(' ')[1]+'</div></div></td>';
+	    	contentString = contentString + '<td style="text-align:center;"><div style="margin:0px 0px 0px 0px;">'
+	    	+'<div style="background:#EE0000; width:24px; height:24px; border:1px solid #C2C2C2"></div></div>'
+	    	+'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">69.1%</div>'
+	    	+'<div class="candidate-votes">165,773</div></td><td class="right" style="text-align:right; padding-left:6px;">'
+    +'<div class="candidate-delegates"></div></td></tr>'		
+	    }
+	contentString = contentString + '</tbody></table></div>'
+    +'<div class="click-for-local faint-text">Click for detailed results</div></div>';
 	    
 	return contentString;
 }
@@ -473,26 +501,135 @@ function getRegionJSON(region){
 	}
 }
 
-function loadFeature( feature ) {	
+var tipOffset = { x:10, y:20 };
+var $maptip = $('#maptip'), tipHtml;
 
+function formatTip( feature ) {
+	if( ! feature ) 
+		return null;
+	
+	return createInfoContent(getRegionJSON(feature.geojsonProperties.ID));
+	/*var contentString = '<div class="tiptitlebar">'
+	    +'<div style="float:left;">'
+	    +'<span class="tiptitletext"></span>'
+	    +'</div><div style="clear:left;">'
+	    +'</div><div class="tipreporting">100% reporting (481/481)</div></div>'
+	    +'<div class="tipcontent"><table class="candidates" cellpadding="0" cellspacing="0">'
+    +'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>'
+    +'<th style="text-align:right; padding-bottom:4px;">Votes</th><th style="text-align:right; padding-bottom:4px;"></th>'
+    +'</tr><tr class="legend-candidate first" id="legend-candidate-Cynthia Lummis"><td class="left"></td>'
+    +'<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">Cynthia</div>'
+    +'<div class="last-name" style="font-weight:bold;">Lummis</div></div></td>'
+    +'<td style="text-align:center;"><div style="margin:0px 0px 0px 0px;">'
+    +'<div style="background:#EE0000; width:24px; height:24px; border:1px solid #C2C2C2"></div></div>'
+    +'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">69.1%</div>'
+    +'<div class="candidate-votes">165,773</div></td><td class="right" style="text-align:right; padding-left:6px;">'
+    +'<div class="candidate-delegates"></div></td></tr><tr class="legend-candidate" id="legend-candidate-Chris Henrichsen">'
+    +'<td class="left"></td><td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;">'
+    +'<div class="first-name">Chris</div><div class="last-name" style="font-weight:bold;">Henrichsen</div>'
+    +'</div></td><td style="text-align:center;"><div style="margin:5px 5px 5px 5px;">'
+    +'<div style="background:#0000EE; width:14px; height:14px; border:1px solid #C2C2C2"></div></div>'
+    +'</td> <td style="text-align:right; padding-left:6px;"><div class="candidate-percent">23.8%</div>'
+    +'<div class="candidate-votes">57,148</div></td><td class="right" style="text-align:right; padding-left:6px;">'
+    +'<div class="candidate-delegates"></div></td></tr><tr class="legend-candidate" id="legend-candidate-Richard Brubaker">'
+    +'<td class="left"></td><td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;">'
+    +'<div class="first-name">Richard</div><div class="last-name" style="font-weight:bold;">Brubaker</div>'
+    +'</div></td><td style="text-align:center;"><div style="margin:9px 10px 10px 9px;">' 
+    +'<div style="background:#592B02; width:5px; height:5px; border:1px solid #C2C2C2"></div></div></td>'
+    +'<td style="text-align:right; padding-left:6px;"> <div class="candidate-percent">3.5%</div>'
+    +'<div class="candidate-votes">8,398</div></td><td class="right" style="text-align:right; padding-left:6px;">'
+    +'<div class="candidate-delegates"></div></td></tr></tbody></table></div>'
+    +'<div class="click-for-local faint-text">Click for detailed results</div>';
+	return contentString;*/
+	
+}
+
+function moveTip( event ) {	
+	if(!currentFeature){
+		showTip( false );
+	}
+	if( ! tipHtml ) return;
+	/*if( touch ) {
+		if( ! touch.moveTip ) return;
+		delete touch.moveTip;
+	}*/
+	var x = event.pageX, y = event.pageY;
+	if(
+		x < mapPixBounds.left  ||
+		x >= mapPixBounds.right  ||
+		y < mapPixBounds.top  ||
+		y >= mapPixBounds.bottom
+	) {
+		showTip( false );
+	}
+	x += tipOffset.x;
+	y += tipOffset.y;
+	var pad = 2;
+	var width = $maptip.width(), height = $maptip.height();
+	var offsetLeft = width + tipOffset.x * 2;
+	var offsetTop = height + tipOffset.y * 2;
+	
+	if( x + width > ww - pad ) {
+		x -= width + pad + tipOffset.x * 2;
+	}
+	if( x < pad ) {
+		x = pad;
+	}
+	
+	if( y + height > wh - pad )
+		y -= height + pad + tipOffset.y * 2;
+	if( y < pad )
+		y = wh - pad - height - tipOffset.y * 2;
+	
+	$maptip.css({ left:x, top:y });
+}
+
+function showTip( feature ) {
+	tipHtml = formatTip( feature );
+	if( tipHtml ) {
+		$maptip.html( tipHtml ).show();
+	}
+	else {
+		$maptip.hide();		
+	}
+}
+
+var currentRegion = "";
+var currentFeature = null;
+function loadFeature( feature ) {	
+	$body.bind( 'click mousemove', moveTip );
 	// on click			
 	google.maps.event.addListener(feature, 'click', function (e) {
 		alert("TODO: Must show results summary for region - " + getAbbr(this));
  	});
+	
 
 	// on mouseover
  	google.maps.event.addListener(feature, 'mouseover', function (e) {
  		// use 'this' to access regions
 		this.set('fillColor', "#e809a1");	
-		infowindow.content = createInfoContent(getRegionJSON(this.geojsonProperties.ID));
- 		infowindow.position = e.latLng;
- 		infowindow.open(map);	
+		currentFeature = this;
+		showTip(this);
+		moveTip(e);
+		
+		
+		/*if(currentRegion === this.geojsonProperties.ID){
+			infowindow.position = e.latLng;
+			infowindow.open(map);
+		}else{
+			infowindow.content = createInfoContent(getRegionJSON(this.geojsonProperties.ID));
+			infowindow.position = e.latLng;
+			infowindow.open(map);
+			currentRegion = this.geojsonProperties.ID;
+		}*/
+
  	});
 
 	// on mouseout
  	google.maps.event.addListener(feature, 'mouseout', function (e) {
  		// use 'this' to access regions
  		this.set('fillColor', default_style.fillColor);
+ 		currentFeature = null;
  		
  	});	
 
