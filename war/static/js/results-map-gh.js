@@ -190,7 +190,7 @@ document.write(
 	'</div>'
 );
 
-var presidentialResult = {"presidentialoverview" : [{"NDC":"8","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"GREATER ACCRA","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"NORTHERN REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"ASHANTI REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"BRONG AHAFO REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"CENTRAL REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"EASTERN REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"VOLTA REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"WESTERN REGION","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"UPPER EAST","INDP":"0"},{"NDC":"0","CPP":"0","GCPP":"0","UFP":"0","PNC":"0","PPP":"0","NPP":"0","REGION":"UPPER WEST","INDP":"0"}]};
+var presidentialResult = {"GREATER ACCRA":{"NDC":8,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"NORTHERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ASHANTI REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BRONG_AHAFO REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"CENTRAL REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"EASTERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"VOLTA REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"WESTERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"UPPER EAST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"UPPER WEST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0}};
 //$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get", function(data){
 //	presidentialResult = data;
 //});
@@ -358,15 +358,9 @@ var candidatesNames = {
 	'PPP': 'Papa Kwesi Nduom',	
 	'PNC': 'Hassan Ayariga',
 	'CPP': 'Abu Sakara Foster',
-<<<<<<< HEAD
 	'INDP': 'Jacob Osei Yeboah',
 	'GCPP': 'Herbert Lartey',
 	'UFP': 'Akwasi Addai Odike',
-=======
-	'INDP': 'John Dramani Mahama',
-	'GCPP': 'John Dramani Mahama',
-	'UFP': 'John Dramani Mahama',
->>>>>>> 5b27851ea56f0e0dda014fc1dc0941bc8533c5ae
 };
 
 var regions = {
@@ -420,42 +414,6 @@ var contentString = '<div id="content">'+
 '</div>';
 
 
-
-function createInfoContent1(region){
-	var contentString = '<div class="tiptitlebar">'
-	    +'<div style="float:left;">'
-	    +'<span class="tiptitletext">'+region+'</span>'
-	    +'</div><div style="clear:left;">'
-	    +'</div><div class="tipreporting">100% reporting (481/481)</div></div>'
-	    +'<div class="tipcontent"><table class="candidates" cellpadding="0" cellspacing="0">'
-    +'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>'
-    +'<th style="text-align:right; padding-bottom:4px;">Votes</th><th style="text-align:right; padding-bottom:4px;"></th>'
-    +'</tr><tr class="legend-candidate first" id="legend-candidate-Cynthia Lummis"><td class="left"></td>'
-    +'<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">Cynthia</div>'
-    +'<div class="last-name" style="font-weight:bold;">Lummis</div></div></td>'
-    +'<td style="text-align:center;"><div style="margin:0px 0px 0px 0px;">'
-    +'<div style="background:#EE0000; width:24px; height:24px; border:1px solid #C2C2C2"></div></div>'
-    +'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">69.1%</div>'
-    +'<div class="candidate-votes">165,773</div></td><td class="right" style="text-align:right; padding-left:6px;">'
-    +'<div class="candidate-delegates"></div></td></tr><tr class="legend-candidate" id="legend-candidate-Chris Henrichsen">'
-    +'<td class="left"></td><td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;">'
-    +'<div class="first-name">Chris</div><div class="last-name" style="font-weight:bold;">Henrichsen</div>'
-    +'</div></td><td style="text-align:center;"><div style="margin:5px 5px 5px 5px;">'
-    +'<div style="background:#0000EE; width:14px; height:14px; border:1px solid #C2C2C2"></div></div>'
-    +'</td> <td style="text-align:right; padding-left:6px;"><div class="candidate-percent">23.8%</div>'
-    +'<div class="candidate-votes">57,148</div></td><td class="right" style="text-align:right; padding-left:6px;">'
-    +'<div class="candidate-delegates"></div></td></tr><tr class="legend-candidate" id="legend-candidate-Richard Brubaker">'
-    +'<td class="left"></td><td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;">'
-    +'<div class="first-name">Richard</div><div class="last-name" style="font-weight:bold;">Brubaker</div>'
-    +'</div></td><td style="text-align:center;"><div style="margin:9px 10px 10px 9px;">' 
-    +'<div style="background:#592B02; width:5px; height:5px; border:1px solid #C2C2C2"></div></div></td>'
-    +'<td style="text-align:right; padding-left:6px;"> <div class="candidate-percent">3.5%</div>'
-    +'<div class="candidate-votes">8,398</div></td><td class="right" style="text-align:right; padding-left:6px;">'
-    +'<div class="candidate-delegates"></div></td></tr></tbody></table></div>'
-    +'<div class="click-for-local faint-text">Click for detailed results</div>';
-	return contentString;
-}
-
 function sortCandidates(candidates){
 	var cand = [];
 	for(var k in candidates){
@@ -467,12 +425,13 @@ function sortCandidates(candidates){
 	return cand;
 }
 
-function createInfoContent(region){
-	var candidates = sortCandidates(region);
+function createInfoContent(region, results){
+	var candidates = sortCandidates(results);
+	
 	
 	var contentString = '<div class="tiptitlebar">'
 	    +'<div style="float:left;">'
-	    +'<span class="tiptitletext">'+region.REGION+'</span>'
+	    +'<span class="tiptitletext">'+region+' Region</span>'
 	    +'</div><div style="clear:left;">'
 	    +'</div><div class="tipreporting">100% reporting (481/481)</div>'
 	    +'<table class="candidates" cellpadding="0" cellspacing="0">'
@@ -500,9 +459,9 @@ function createInfoContent(region){
 var infowindow = new google.maps.InfoWindow();
 
 function getRegionJSON(region){
-	for(var i = 0; i< presidentialResult.presidentialoverview.length; i++){
-		if(presidentialResult.presidentialoverview[i].REGION.toString().toLowerCase().indexOf(region.toLowerCase()) !== -1){
-			return presidentialResult.presidentialoverview[i];
+	for(var k in presidentialResult){
+		if(k.toString().toLowerCase().indexOf(region.toLowerCase()) !== -1){
+			return presidentialResult[k];			
 		}
 	}
 }
@@ -514,42 +473,10 @@ function formatTip( feature ) {
 	if( ! feature ) 
 		return null;
 	
-	return createInfoContent(getRegionJSON(feature.geojsonProperties.ID));
-	/*var contentString = '<div class="tiptitlebar">'
-	    +'<div style="float:left;">'
-	    +'<span class="tiptitletext"></span>'
-	    +'</div><div style="clear:left;">'
-	    +'</div><div class="tipreporting">100% reporting (481/481)</div></div>'
-	    +'<div class="tipcontent"><table class="candidates" cellpadding="0" cellspacing="0">'
-    +'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>'
-    +'<th style="text-align:right; padding-bottom:4px;">Votes</th><th style="text-align:right; padding-bottom:4px;"></th>'
-    +'</tr><tr class="legend-candidate first" id="legend-candidate-Cynthia Lummis"><td class="left"></td>'
-    +'<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">Cynthia</div>'
-    +'<div class="last-name" style="font-weight:bold;">Lummis</div></div></td>'
-    +'<td style="text-align:center;"><div style="margin:0px 0px 0px 0px;">'
-    +'<div style="background:#EE0000; width:24px; height:24px; border:1px solid #C2C2C2"></div></div>'
-    +'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">69.1%</div>'
-    +'<div class="candidate-votes">165,773</div></td><td class="right" style="text-align:right; padding-left:6px;">'
-    +'<div class="candidate-delegates"></div></td></tr><tr class="legend-candidate" id="legend-candidate-Chris Henrichsen">'
-    +'<td class="left"></td><td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;">'
-    +'<div class="first-name">Chris</div><div class="last-name" style="font-weight:bold;">Henrichsen</div>'
-    +'</div></td><td style="text-align:center;"><div style="margin:5px 5px 5px 5px;">'
-    +'<div style="background:#0000EE; width:14px; height:14px; border:1px solid #C2C2C2"></div></div>'
-    +'</td> <td style="text-align:right; padding-left:6px;"><div class="candidate-percent">23.8%</div>'
-    +'<div class="candidate-votes">57,148</div></td><td class="right" style="text-align:right; padding-left:6px;">'
-    +'<div class="candidate-delegates"></div></td></tr><tr class="legend-candidate" id="legend-candidate-Richard Brubaker">'
-    +'<td class="left"></td><td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;">'
-    +'<div class="first-name">Richard</div><div class="last-name" style="font-weight:bold;">Brubaker</div>'
-    +'</div></td><td style="text-align:center;"><div style="margin:9px 10px 10px 9px;">' 
-    +'<div style="background:#592B02; width:5px; height:5px; border:1px solid #C2C2C2"></div></div></td>'
-    +'<td style="text-align:right; padding-left:6px;"> <div class="candidate-percent">3.5%</div>'
-    +'<div class="candidate-votes">8,398</div></td><td class="right" style="text-align:right; padding-left:6px;">'
-    +'<div class="candidate-delegates"></div></td></tr></tbody></table></div>'
-    +'<div class="click-for-local faint-text">Click for detailed results</div>';
-	return contentString;*/
+	return createInfoContent(feature.geojsonProperties.ID, getRegionJSON(feature.geojsonProperties.ID));
+
 	
 }
-<<<<<<< HEAD
 
 function moveTip( event ) {	
 	if(!currentFeature){
@@ -591,49 +518,6 @@ function moveTip( event ) {
 	$maptip.css({ left:x, top:y });
 }
 
-=======
-
-function moveTip( event ) {	
-	if(!currentFeature){
-		showTip( false );
-	}
-	if( ! tipHtml ) return;
-	/*if( touch ) {
-		if( ! touch.moveTip ) return;
-		delete touch.moveTip;
-	}*/
-	var x = event.pageX, y = event.pageY;
-	if(
-		x < mapPixBounds.left  ||
-		x >= mapPixBounds.right  ||
-		y < mapPixBounds.top  ||
-		y >= mapPixBounds.bottom
-	) {
-		showTip( false );
-	}
-	x += tipOffset.x;
-	y += tipOffset.y;
-	var pad = 2;
-	var width = $maptip.width(), height = $maptip.height();
-	var offsetLeft = width + tipOffset.x * 2;
-	var offsetTop = height + tipOffset.y * 2;
-	
-	if( x + width > ww - pad ) {
-		x -= width + pad + tipOffset.x * 2;
-	}
-	if( x < pad ) {
-		x = pad;
-	}
-	
-	if( y + height > wh - pad )
-		y -= height + pad + tipOffset.y * 2;
-	if( y < pad )
-		y = wh - pad - height - tipOffset.y * 2;
-	
-	$maptip.css({ left:x, top:y });
-}
-
->>>>>>> 5b27851ea56f0e0dda014fc1dc0941bc8533c5ae
 function showTip( feature ) {
 	tipHtml = formatTip( feature );
 	if( tipHtml ) {
