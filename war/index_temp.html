@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas { height: 100%; width: 100% }
+    </style>
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDKAo6bWtDllDRBRGi4GeNzaibrdBwAedU&sensor=true">
+    </script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript">
+    var mapStyles = [
+                     {
+                         stylers: [ { saturation: -25 } ]
+                     },{
+                         featureType: "road",
+                         elementType: "labels",
+                         stylers: [ { visibility: "off" } ]
+                     },{
+                          featureType: "road",
+                          elementType: "geometry",
+                          stylers: [ { lightness: 50 }, { saturation: 10 }, { visibility: "simplified" } ]
+                     },{
+                          featureType: "transit",
+                          stylers: [ { visibility: "off" } ]
+                      },{
+                          featureType: "landscape",
+                          stylers: [ { lightness: 100 }, { saturation: -100 } ]
+                      },{
+                          featureType: "administrative",
+                          elementType: "geometry",
+                          stylers: [ { visibility: "off" } ]
+                      },{
+                          featureType: "administrative.country",
+                          elementType: "labels",
+                          stylers: [ { visibility: "off" } ]
+                        
+                      },{
+                          featureType: "poi.park",
+                          elementType: "geometry",
+                          stylers: [{ lightness: 60 }]
+                      }
+                 ];
+
+    
+  function initialize() {
+    var myOptions = {
+    		mapTypeControl: false,
+    		mapTypeId: 'simple',
+    		streetViewControl: false,
+    		panControl: false,
+    		rotateControl: false,	
+    		zoomControl: false,
+    		draggable:true,
+    		scrollWheel: true,
+    		disableDoubleClickZoom: false
+    };
+    gm = google.maps;
+    var map = new gm.Map(document.getElementById("map_canvas"), myOptions);
+    var mapType = new gm.StyledMapType( mapStyles );
+	map.mapTypes.set( 'simple', mapType );
+	
+    var asLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-as.kmz',
+    		{suppressInfoWindows:true});
+    asLayer.setMap(map);
+    
+    var baLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-ba.kmz',
+    		{suppressInfoWindows:true});
+    baLayer.setMap(map);
+    
+    var crLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-cr.kmz',
+    		{suppressInfoWindows:true});
+    crLayer.setMap(map);
+    
+    var erLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-er.kmz',
+    		{suppressInfoWindows:true});
+    erLayer.setMap(map);
+    
+    var gaLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-ga.kmz',
+    		{suppressInfoWindows:true});
+    gaLayer.setMap(map);
+    
+    var nrLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-nr.kmz',
+    		{suppressInfoWindows:true});
+    nrLayer.setMap(map);
+    
+    var ueLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-ue.kmz',
+    		{suppressInfoWindows:true});
+    ueLayer.setMap(map);
+    
+    var uwLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-uw.kmz',
+    		{suppressInfoWindows:true});
+    uwLayer.setMap(map);
+    
+    var vrLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-vr.kmz',
+    		{suppressInfoWindows:true});
+    vrLayer.setMap(map);
+   
+   
+    
+    var wrLayer = new google.maps.KmlLayer('http://election-map-gh.appspot.com/static/shapes/gh-wr.kmz',
+    		{suppressInfoWindows:true});
+    wrLayer.setMap(map);
+   
+    map.setZoom(5);
+  }
+</script>
+  </head>
+  
+  <body onload="initialize()">
+    <div id="map_canvas" style="width:100%; height:100%"></div>    
+  </body>
+</html>
