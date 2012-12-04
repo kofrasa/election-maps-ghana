@@ -134,7 +134,7 @@ document.write(
 		'body.tv div.legend-candidate, body.tv div.legend-filler { font-size:21px; font-weight:bold; }',
 		'td.legend-filler { border-color:transparent; }',
 		//'tr.legend-candidate td { width:20%; }',
-		'.candidate-row:hover { background-color: #eeeeee; }',
+		//'.candidate-row:hover { background-color: #eeeeee; }',
 		'tr.legend-candidate td { cursor:pointer; }',
 		'tr.legend-candidate.hover td, tr.legend-candidate:hover td { background-color:#F6F6F6; border: 1px solid #F6F6F6; border-top:1px solid #D9D9D9; border-bottom: 1px solid #D9D9D9; -webkit-transition: all 0.218s; -moz-transition: all 0.218s; transition: all 0.218s; }',
 		'tr.legend-candidate.hover td.left, tr.legend-candidate:hover td.left { border-left: 1px solid #D9D9D9; -webkit-transition: all 0.218s; -moz-transition: all 0.218s; transition: all 0.218s; }',
@@ -442,6 +442,7 @@ var default_style = {
 
 var feature_map = {};
 var feature_collection;
+var currentFeature, prevFeature, candidates;
 
 
 function sortCandidates(candidates){
@@ -497,11 +498,8 @@ function formatNumber( nStr ) {
 	return x1 + x2;
 }
 
-function createInfoContent(region, results){
-	//var candidates = convertToCandidates(results);
-	var cand = getTopCandidates(convertToCandidates(results), 'votes', 24);
-	
-	
+function createInfoContent(region){
+
 	var contentString = '<div class="tiptitlebar">'
 	    +'<div style="float:left;">'
 	    +'<span class="tiptitletext">'+region+' Region</span>'
@@ -512,14 +510,14 @@ function createInfoContent(region, results){
 	    +'<th style="text-align:right; padding-bottom:4px;">Votes</th>'
 	    +'<th style="text-align:right; padding-bottom:4px;"></th></tr>'   
 		
-	    for(var c in cand){
-	    	var candidateInfo = candidatesInfo[cand[c].party];	    	
+	    for(var c in candidates) {
+	    	var candidateInfo = candidatesInfo[candidates[c].party];	    	
 	    	contentString = contentString + '<tr class="legend-candidate first" id="legend-candidate-"'+candidateInfo.fullName+'><td class="left"></td>';	    	
 	    	contentString = contentString + '<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">'+candidateInfo.firstName+'</div>';
 	    	contentString = contentString + '<div class="last-name" style="font-weight:bold;">'+candidateInfo.lastName+'</div></div></td>';
-	    	contentString = contentString + '<td style="text-align:center;">'+formatCandidateAreaPatch(cand[c], 24)+
-	    	'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">'+formatPercent(cand[c].vsAll)+'</div>'
-	    	+'<div class="candidate-votes">'+formatNumber(cand[c].votes)+'</div></td><td class="right" style="text-align:right; padding-left:6px;">'
+	    	contentString = contentString + '<td style="text-align:center;">'+formatCandidateAreaPatch(candidates[c], 24)+
+	    	'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">'+formatPercent(candidates[c].vsAll)+'</div>'
+	    	+'<div class="candidate-votes">'+formatNumber(candidates[c].votes)+'</div></td><td class="right" style="text-align:right; padding-left:6px;">'
 	    	+'<div class="candidate-delegates"></div></td></tr>'		
 	    }
 		contentString = contentString + '</tbody></table></div><div class="click-for-local faint-text">Click for detailed results</div></div>';
@@ -541,15 +539,18 @@ var tipOffset = { x:10, y:20 };
 var $maptip = $('#maptip'), tipHtml;
 
 function formatTip() {
-	if( ! currentFeature ) 
-		return null;	
-	return createInfoContent(currentFeature.geojsonProperties.ID, getRegionJSON(currentFeature.geojsonProperties.ID));	
+	if( ! currentFeature ) {
+		candidates = null;
+		return null;
+	}
+	if (currentFeature != prevFeature) {
+		candidates = getTopCandidates(convertToCandidates(getRegionJSON(currentFeature.geojsonProperties.ID)), 'votes', 24);
+	}
+	return createInfoContent(currentFeature.geojsonProperties.ID);
 }
 
 function moveTip( event ) {	
-	if(!currentFeature){
-		return;
-	}
+	showTip();
 	if( ! tipHtml ) return;
 	var x = event.pageX, y = event.pageY;
 	x += tipOffset.x;
@@ -584,45 +585,33 @@ function showTip() {
 	}
 }
 
-var currentRegion = "";
-var currentFeature = null;
-function loadFeature( feature ) {	
-	$body.bind( 'click mousemove', moveTip );
+function loadFeature( feature ) {
+	
 	// on click			
 	google.maps.event.addListener(feature, 'click', function (e) {
 		alert("TODO: Must show results summary for region - " + getAbbr(this));
  	});
 	
-
 	// on mouseover
  	google.maps.event.addListener(feature, 'mouseover', function (e) {
- 		// use 'this' to access regions
-		this.set('fillColor', "#e809a1");	
+ 		// use 'this' to access regions	
+ 		prevFeature = currentFeature;
 		currentFeature = this;
-		showTip(this);
-		moveTip(e);
-		
-		
-		/*if(currentRegion === this.geojsonProperties.ID){
-			infowindow.position = e.latLng;
-			infowindow.open(map);
-		}else{
-			infowindow.content = createInfoContent(getRegionJSON(this.geojsonProperties.ID));
-			infowindow.position = e.latLng;
-			infowindow.open(map);
-			currentRegion = this.geojsonProperties.ID;
-		}*/
-
+		moveTip(e);		
+		color = candidatesInfo[candidates[0].party].color;
+		this.set('fillColor', color);
  	});
 
 	// on mouseout
  	google.maps.event.addListener(feature, 'mouseout', function (e) {
  		// use 'this' to access regions
  		this.set('fillColor', default_style.fillColor);
- 		currentFeature = null;
- 		
+ 		currentFeature = null; 		
  	});	
-
+ 	
+ 	
+ 	 	
+ 	$("#map").bind( 'click mousemove', moveTip );
  	feature.setMap(map);
 	feature_map[getAbbr(feature)] = feature;
 }
