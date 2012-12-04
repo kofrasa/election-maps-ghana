@@ -41,6 +41,7 @@ public class VoteDataHandler extends HttpServlet {
 	private enum Worksheet {
 		PRESIDENTIAL("Presidential", new String[] { "REGION", "CONSTITUENCY","NDC", "GCPP", "NPP", "PPP", "UFP", "PNC", "CPP", "INDP" }), 
 		PALIAMENTARY("Paliamentary", new String[] { "REGION", "CONSTITUENCY","CANDIDATE", "PARTY", "RESULT" });
+		
 
 		private final String sheetName;
 		private final String[] sheetColumns;
@@ -91,18 +92,13 @@ public class VoteDataHandler extends HttpServlet {
 
 			}
 			else if ("update".equals(action)) {
-				Worksheet sheet = worksheetFromValue(value);
-				if (sheet != null) {
-					response = organizeAndSave(sheet);
-				} else {
-					response = organizeAndSave(Worksheet.PRESIDENTIAL);
-				}
+				response = organizeAndSave(value);
 			} else {
-				response = organizeAndSave(Worksheet.PRESIDENTIAL);
+				response = organizeAndSave("presidential");
 			}
 
 		} catch (Exception e) {
-
+			
 			response = "EXCEPTION " + e.getMessage();
 		}
 		resp.setContentType(responseType);
@@ -171,36 +167,31 @@ public class VoteDataHandler extends HttpServlet {
 		return json.toString();
 	}
 	
-	private Worksheet worksheetFromValue(String value) {
-		if (!(value == null || value.equals(""))) {
-			for (Worksheet sheet : Worksheet.values()) {
-				if (value.equalsIgnoreCase(sheet.getWorksheetName())) {
-					return sheet;
-				}
-			}
-		}
-		return null;
-	}
 
-	private String organizeAndSave(Worksheet worksheet) throws Exception {
+
+	private String organizeAndSave(String value) throws Exception {
 		String response = "";
-
+		
+		SpreadsheetHandler handler = new SpreadsheetHandler("ELECTIONS GHANA RESULT");		
+		
+		
+		
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		// Make sure work sheet is one kind or the other
-		if (worksheet == Worksheet.PRESIDENTIAL) {
-			SpreadsheetHandler handler = new SpreadsheetHandler("ELECTIONS GHANA RESULT");
-			List<ListEntry> values = handler.getWorksheetEntries(worksheet.getWorksheetName(),	worksheet.getWorksheetColumns());
-
-			if (values == null || values.size() == 0 || worksheet == null)
+		if (value.equalsIgnoreCase("presidential")) {		
+			Worksheet worksheet = Worksheet.PRESIDENTIAL;
+			List<ListEntry> values = handler.getWorksheetEntries(worksheet.getWorksheetName());
+			
+			if (values == null || values.size() == 0)
 				return "Nothing in spreadsheet";
-
-			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+			
 			List<Entity> constituencies = new ArrayList<Entity>();
 
 			long constituencyKey = 201212070000L;
 			long regionKey = 2012120700L;
 			
 			
-			String [] sheetColumns = 	Worksheet.PRESIDENTIAL.getWorksheetColumns();
+			String [] sheetColumns = worksheet.getWorksheetColumns();
 
 			for (ListEntry entry : values) {				
 				Entity entity = new Entity(KeyFactory.createKey("presidential-constituency", constituencyKey));				
@@ -224,6 +215,30 @@ public class VoteDataHandler extends HttpServlet {
 			datastore.put(constituencies);
 			datastore.put(createRegions(constituencies, regionKey, worksheet));
 			response = "Presidential Sheet Updated";
+		}else{
+			List<ListEntry> values = handler.getWorksheetEntries(value);
+			String [] sheetColumns = Worksheet.PALIAMENTARY.getWorksheetColumns();
+			long entryKey = 20121207000000L;
+			long regionKey = 2012120700L;
+			
+			List<Entity> constituencyEntries = new ArrayList<Entity>();
+			
+			for (ListEntry entry : values) {
+				Entity entity = new Entity(KeyFactory.createKey("parliamentary-constituency", entryKey));
+				CustomElementCollection entryElements = entry.getCustomElements();
+				
+				for(int i = 0; i < sheetColumns.length; i++){
+					if(i <= 3){
+						entity.setProperty(	sheetColumns[i], entryElements.getValue(sheetColumns[i]).trim());
+					}else{
+						entity.setProperty(sheetColumns[i],parseStringToInt(entryElements.getValue(sheetColumns[i].trim())));
+					}
+				}
+				constituencyEntries.add(entity);
+				entryKey+=1;
+			}
+			datastore.put(constituencyEntries);
+			response = value+" Sheet Updated";
 		}
 		return response;
 	}
