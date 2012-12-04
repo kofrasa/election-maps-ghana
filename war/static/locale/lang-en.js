@@ -4,6 +4,8 @@ loadStrings({
 	"clickFor-president": "Click for Presidential results", 
 	"clickFor-paliamentary": "Click for Paliamentary results", 
 	"presidentButton": "Presdential", 
-	"paliamentaryButton": "Paliamentary", 
+	"paliamentaryButton": "Paliamentary",
+	"decimalSep": ".", 
+	"thousandsSep": ",",
 
 })
