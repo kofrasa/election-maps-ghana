@@ -19,6 +19,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
+import com.google.gdata.data.spreadsheet.CustomElementCollection;
 import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gson.Gson;
 import com.rancard.election.common.SpreadsheetHandler;
@@ -108,6 +109,7 @@ public class VoteDataHandler extends HttpServlet {
 		resp.getWriter().println(response);
 	}
 
+	@SuppressWarnings("unchecked")
 	private String convertEntitiesToJSON(Iterable<Entity> entities, String value){
 		StringBuilder json = new StringBuilder();
 		if("presidential-overview".equals(value)) {
@@ -185,82 +187,34 @@ public class VoteDataHandler extends HttpServlet {
 
 		// Make sure work sheet is one kind or the other
 		if (worksheet == Worksheet.PRESIDENTIAL) {
-			SpreadsheetHandler handler = new SpreadsheetHandler(
-					"ELECTIONS GHANA RESULT");
-			List<ListEntry> values = handler.getWorksheetEntries(
-					worksheet.getWorksheetName(),
-					worksheet.getWorksheetColumns());
+			SpreadsheetHandler handler = new SpreadsheetHandler("ELECTIONS GHANA RESULT");
+			List<ListEntry> values = handler.getWorksheetEntries(worksheet.getWorksheetName(),	worksheet.getWorksheetColumns());
 
 			if (values == null || values.size() == 0 || worksheet == null)
 				return "Nothing in spreadsheet";
 
-			DatastoreService datastore = DatastoreServiceFactory
-					.getDatastoreService();
+			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			List<Entity> constituencies = new ArrayList<Entity>();
 
 			long constituencyKey = 201212070000L;
 			long regionKey = 2012120700L;
+			
+			
+			String [] sheetColumns = 	Worksheet.PRESIDENTIAL.getWorksheetColumns();
 
-			for (ListEntry entry : values) {
-
-				// updateRegion(regions, s);
-
-				Entity entity = new Entity(KeyFactory.createKey(
-						"presidential-constituency", constituencyKey));
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[0],
-						entry.getCustomElements()
-								.getValue(
-										Worksheet.PRESIDENTIAL
-												.getWorksheetColumns()[0])
-								.trim());
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[1],
-						entry.getCustomElements()
-								.getValue(
-										Worksheet.PRESIDENTIAL
-												.getWorksheetColumns()[1])
-								.trim());
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[2],
-						parseStringToInt(entry.getCustomElements().getValue(
-								Worksheet.PRESIDENTIAL.getWorksheetColumns()[2]
-										.trim())));
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[3],
-						parseStringToInt(entry.getCustomElements().getValue(
-								Worksheet.PRESIDENTIAL.getWorksheetColumns()[3]
-										.trim())));
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[4],
-						parseStringToInt(entry.getCustomElements().getValue(
-								Worksheet.PRESIDENTIAL.getWorksheetColumns()[4]
-										.trim())));
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[5],
-						parseStringToInt(entry.getCustomElements().getValue(
-								Worksheet.PRESIDENTIAL.getWorksheetColumns()[5]
-										.trim())));
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[6],
-						parseStringToInt(entry.getCustomElements().getValue(
-								Worksheet.PRESIDENTIAL.getWorksheetColumns()[6]
-										.trim())));
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[7],
-						parseStringToInt(entry.getCustomElements().getValue(
-								Worksheet.PRESIDENTIAL.getWorksheetColumns()[7]
-										.trim())));
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[8],
-						parseStringToInt(entry.getCustomElements().getValue(
-								Worksheet.PRESIDENTIAL.getWorksheetColumns()[8]
-										.trim())));
-				entity.setProperty(
-						Worksheet.PRESIDENTIAL.getWorksheetColumns()[9],
-						parseStringToInt(entry.getCustomElements().getValue(
-								Worksheet.PRESIDENTIAL.getWorksheetColumns()[9]
-										.trim())));
+			for (ListEntry entry : values) {				
+				Entity entity = new Entity(KeyFactory.createKey("presidential-constituency", constituencyKey));				
+				CustomElementCollection entryElements = entry.getCustomElements();
+				
+				for(int i = 0; i < sheetColumns.length; i++)
+				{
+					if(i <= 1){
+						entity.setProperty(	sheetColumns[i], entryElements.getValue(sheetColumns[i]).trim());
+					}
+					else{
+						entity.setProperty(sheetColumns[i],parseStringToInt(entryElements.getValue(sheetColumns[i].trim())));
+					}
+				}				
 
 				constituencies.add(entity);
 				constituencyKey = constituencyKey + 1;
@@ -274,145 +228,32 @@ public class VoteDataHandler extends HttpServlet {
 		return response;
 	}
 
-	private List<Entity> createRegions(List<Entity> constituencies,
-			long regionKey, Worksheet worksheet) {
+	private List<Entity> createRegions(List<Entity> constituencies,	long regionKey, Worksheet worksheet) {
 		List<Entity> regions = new ArrayList<Entity>();
 
 		if (worksheet == Worksheet.PRESIDENTIAL) {
+			String [] sheetColumns = 	Worksheet.PRESIDENTIAL.getWorksheetColumns();
 			for (Entity entity : constituencies) {
 				boolean updated = false;
+				
 
 				for (Entity e : regions) {
-					if (e.getProperty(worksheet.getWorksheetColumns()[0])
-							.toString()
-							.equalsIgnoreCase(
-									entity.getProperty(
-											worksheet.getWorksheetColumns()[0])
-											.toString())) {
-						e.setProperty(
-								worksheet.getWorksheetColumns()[2],
-								Integer.parseInt(e.getProperty(
-										worksheet.getWorksheetColumns()[2])
-										.toString())
-										+ Integer.parseInt(entity
-												.getProperty(
-														worksheet
-																.getWorksheetColumns()[2])
-												.toString()));
-						e.setProperty(
-								worksheet.getWorksheetColumns()[3],
-								Integer.parseInt(e.getProperty(
-										worksheet.getWorksheetColumns()[3])
-										.toString())
-										+ Integer.parseInt(entity
-												.getProperty(
-														worksheet
-																.getWorksheetColumns()[3])
-												.toString()));
-						e.setProperty(
-								worksheet.getWorksheetColumns()[4],
-								Integer.parseInt(e.getProperty(
-										worksheet.getWorksheetColumns()[4])
-										.toString())
-										+ Integer.parseInt(entity
-												.getProperty(
-														worksheet
-																.getWorksheetColumns()[4])
-												.toString()));
-						e.setProperty(
-								worksheet.getWorksheetColumns()[5],
-								Integer.parseInt(e.getProperty(
-										worksheet.getWorksheetColumns()[5])
-										.toString())
-										+ Integer.parseInt(entity
-												.getProperty(
-														worksheet
-																.getWorksheetColumns()[5])
-												.toString()));
-						e.setProperty(
-								worksheet.getWorksheetColumns()[6],
-								Integer.parseInt(e.getProperty(
-										worksheet.getWorksheetColumns()[6])
-										.toString())
-										+ Integer.parseInt(entity
-												.getProperty(
-														worksheet
-																.getWorksheetColumns()[6])
-												.toString()));
-						e.setProperty(
-								worksheet.getWorksheetColumns()[7],
-								Integer.parseInt(e.getProperty(
-										worksheet.getWorksheetColumns()[7])
-										.toString())
-										+ Integer.parseInt(entity
-												.getProperty(
-														worksheet
-																.getWorksheetColumns()[7])
-												.toString()));
-						e.setProperty(
-								worksheet.getWorksheetColumns()[8],
-								Integer.parseInt(e.getProperty(
-										worksheet.getWorksheetColumns()[8])
-										.toString())
-										+ Integer.parseInt(entity
-												.getProperty(
-														worksheet
-																.getWorksheetColumns()[8])
-												.toString()));
-						e.setProperty(
-								worksheet.getWorksheetColumns()[9],
-								Integer.parseInt(e.getProperty(
-										worksheet.getWorksheetColumns()[9])
-										.toString())
-										+ Integer.parseInt(entity
-												.getProperty(
-														worksheet
-																.getWorksheetColumns()[9])
-												.toString()));
-
+					
+					if (e.getProperty(sheetColumns[0]).toString().equalsIgnoreCase(entity.getProperty(sheetColumns[0]).toString())) {
+						
+						for(int i = 2; i < sheetColumns.length; i++){
+							e.setProperty(sheetColumns[i],Integer.parseInt(e.getProperty(sheetColumns[i]).toString())
+									+ Integer.parseInt(entity.getProperty(sheetColumns[i]).toString()));
+						}						
 						updated = true;
 					}
 				}
 
 				if (!updated) {
-					Entity newEntity = new Entity(KeyFactory.createKey(
-							"presidential-overview", regionKey));
-					newEntity
-							.setProperty(worksheet.getWorksheetColumns()[0],
-									entity.getProperty(worksheet
-											.getWorksheetColumns()[0]));
-					newEntity
-							.setProperty(worksheet.getWorksheetColumns()[2],
-									entity.getProperty(worksheet
-											.getWorksheetColumns()[2]));
-					newEntity
-							.setProperty(worksheet.getWorksheetColumns()[3],
-									entity.getProperty(worksheet
-											.getWorksheetColumns()[3]));
-					newEntity
-							.setProperty(worksheet.getWorksheetColumns()[4],
-									entity.getProperty(worksheet
-											.getWorksheetColumns()[4]));
-					newEntity
-							.setProperty(worksheet.getWorksheetColumns()[5],
-									entity.getProperty(worksheet
-											.getWorksheetColumns()[5]));
-					newEntity
-							.setProperty(worksheet.getWorksheetColumns()[6],
-									entity.getProperty(worksheet
-											.getWorksheetColumns()[6]));
-					newEntity
-							.setProperty(worksheet.getWorksheetColumns()[7],
-									entity.getProperty(worksheet
-											.getWorksheetColumns()[7]));
-					newEntity
-							.setProperty(worksheet.getWorksheetColumns()[8],
-									entity.getProperty(worksheet
-											.getWorksheetColumns()[8]));
-					newEntity
-							.setProperty(worksheet.getWorksheetColumns()[9],
-									entity.getProperty(worksheet
-											.getWorksheetColumns()[9]));
+					Entity newEntity = new Entity(KeyFactory.createKey("presidential-overview", regionKey));
+					for(int i = 0; i< sheetColumns.length; i++){
+						newEntity.setProperty(sheetColumns[i],	entity.getProperty(sheetColumns[i]));
+					}					
 
 					regions.add(newEntity);
 					regionKey += 1;

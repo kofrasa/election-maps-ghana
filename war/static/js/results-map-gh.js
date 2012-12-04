@@ -190,7 +190,7 @@ document.write(
 	'</div>'
 );
 
-var presidentialResult = {"GREATER ACCRA":{"NDC":8,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"NORTHERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ASHANTI REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BRONG_AHAFO REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"CENTRAL REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"EASTERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"VOLTA REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"WESTERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"UPPER EAST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"UPPER WEST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0}};
+var presidentialResult = {"GREATER ACCRA":{"NDC":8,"CPP":0,"GCPP":0,"UFP":10,"PNC":0,"PPP":0,"NPP":7,"INDP":0},"NORTHERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ASHANTI REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BRONG AHAFO REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"CENTRAL REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"EASTERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"VOLTA REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"WESTERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"UPPER EAST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"UPPER WEST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0}};
 //$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get", function(data){
 //	presidentialResult = data;
 //});
@@ -352,16 +352,7 @@ function getAbbr(feature) {
 	return abbr[feature.geojsonProperties.ID];
 }
 
-var candidatesNames = {
-	'NDC': 'John Dramani Mahama',
-	'NPP': 'Nana Addo Dankwa Akufo-Addo',	
-	'PPP': 'Papa Kwesi Nduom',	
-	'PNC': 'Hassan Ayariga',
-	'CPP': 'Abu Sakara Foster',
-	'INDP': 'Jacob Osei Yeboah',
-	'GCPP': 'Herbert Lartey',
-	'UFP': 'Akwasi Addai Odike',
-};
+
 
 var regions = {
 	'GA': 'Greater Accra',
@@ -392,27 +383,6 @@ var default_style = {
 var feature_map = {};
 var feature_collection;
 
-var contentString = '<div id="content">'+
-'<div id="siteNotice">'+
-'</div>'+
-'<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
-'<div id="bodyContent">'+
-'<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large ' +
-'sandstone rock formation in the southern part of the '+
-'Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) '+
-'south west of the nearest large town, Alice Springs; 450&#160;km '+
-'(280&#160;mi) by road. Kata Tjuta and Uluru are the two major '+
-'features of the Uluru - Kata Tjuta National Park. Uluru is '+
-'sacred to the Pitjantjatjara and Yankunytjatjara, the '+
-'Aboriginal people of the area. It has many springs, waterholes, '+
-'rock caves and ancient paintings. Uluru is listed as a World '+
-'Heritage Site.</p>'+
-'<p>Attribution: Uluru, <a href="http://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
-'http://en.wikipedia.org/w/index.php?title=Uluru</a> '+
-'(last visited June 22, 2009).</p>'+
-'</div>'+
-'</div>';
-
 
 function sortCandidates(candidates){
 	var cand = [];
@@ -425,8 +395,51 @@ function sortCandidates(candidates){
 	return cand;
 }
 
+
+function formatCandidateAreaPatch( candidate, max ) {
+	var vsTop = candidate.vsTop;
+	if(isNaN(vsTop)) vsTop = 0;
+	var size = Math.round( Math.sqrt( vsTop ) * max );
+	var margin1 = Math.floor( ( max - size ) / 2 );
+	var margin2 = max - size - margin1;
+	
+	var color = candidatesInfo[candidate.party].color || '#FFFFFF';  // TEMP
+	return S(
+		'<div style="margin:', margin1, 'px ', margin2, 'px ', margin2, 'px ', margin1, 'px;">',
+			formatDivColorPatch( color, size, size ),
+		'</div>'
+	);
+}
+
+function formatDivColorPatch( color, width, height, border ) {
+	border = border || '1px solid #C2C2C2';
+	return S(
+		'<div style="background:', color, '; width:', width, 'px; height:', height, 'px; border:', border, '">',
+		'</div>'
+	);
+}
+
+function formatPercent( n ) {
+	if(isNaN(n)) n = 0;
+	return percent1( n, T('decimalSep') );
+}
+
+function formatNumber( nStr ) {
+	var dsep = T('decimalSep'), tsep = T('thousandsSep');
+	nStr += '';
+	x = nStr.split('.');
+	x1 = x[0];
+	x2 = x.length > 1 ? dsep + x[1] : '';
+	var rgx = /(\d+)(\d{3})/;
+	while( rgx.test(x1) ) {
+		x1 = x1.replace( rgx, '$1' + tsep + '$2' );
+	}
+	return x1 + x2;
+}
+
 function createInfoContent(region, results){
-	var candidates = sortCandidates(results);
+	//var candidates = convertToCandidates(results);
+	var cand = getTopCandidates(convertToCandidates(results), 'votes', 24);
 	
 	
 	var contentString = '<div class="tiptitlebar">'
@@ -439,19 +452,17 @@ function createInfoContent(region, results){
 	    +'<th style="text-align:right; padding-bottom:4px;">Votes</th>'
 	    +'<th style="text-align:right; padding-bottom:4px;"></th></tr>'   
 		
-	    for(var c in candidates){
-	    	var candidateName = candidatesNames[candidates[c][0]];	    	
-	    	contentString = contentString + '<tr class="legend-candidate first" id="legend-candidate-"'+candidateName+'><td class="left"></td>';	    	
-	    	contentString = contentString + '<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">'+candidateName.split(' ')[0]+'</div>';
-	    	contentString = contentString + '<div class="last-name" style="font-weight:bold;">'+candidateName.split(' ')[1]+'</div></div></td>';
-	    	contentString = contentString + '<td style="text-align:center;"><div style="margin:0px 0px 0px 0px;">'
-	    	+'<div style="background:#EE0000; width:24px; height:24px; border:1px solid #C2C2C2"></div></div>'
-	    	+'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">69.1%</div>'
-	    	+'<div class="candidate-votes">165,773</div></td><td class="right" style="text-align:right; padding-left:6px;">'
-    +'<div class="candidate-delegates"></div></td></tr>'		
+	    for(var c in cand){
+	    	var candidateInfo = candidatesInfo[cand[c].party];	    	
+	    	contentString = contentString + '<tr class="legend-candidate first" id="legend-candidate-"'+candidateInfo.fullName+'><td class="left"></td>';	    	
+	    	contentString = contentString + '<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">'+candidateInfo.firstName+'</div>';
+	    	contentString = contentString + '<div class="last-name" style="font-weight:bold;">'+candidateInfo.lastName+'</div></div></td>';
+	    	contentString = contentString + '<td style="text-align:center;">'+formatCandidateAreaPatch(cand[c], 24)+
+	    	'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">'+formatPercent(cand[c].vsAll)+'</div>'
+	    	+'<div class="candidate-votes">'+formatNumber(cand[c].votes)+'</div></td><td class="right" style="text-align:right; padding-left:6px;">'
+	    	+'<div class="candidate-delegates"></div></td></tr>'		
 	    }
-	contentString = contentString + '</tbody></table></div>'
-    +'<div class="click-for-local faint-text">Click for detailed results</div></div>';
+		contentString = contentString + '</tbody></table></div><div class="click-for-local faint-text">Click for detailed results</div></div>';
 	    
 	return contentString;
 }
