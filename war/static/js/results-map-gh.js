@@ -179,7 +179,7 @@ document.write(
 	'</div>',
 	'<div id="maptip">',
 	'</div>',
-	'<a id="google-logo" class="logo" target="_blank" href="http://www.google.com/elections/ed/us/home" title="', T('googlePoliticsTitle'), '">',
+	'<a id="google-logo" class="logo" target="_blank" href="http://www.google.com.gh/elections/ed/gh" title="', T('googlePoliticsTitle'), '">',
 	'</a>',
 	'<div id="error" style="display:none;">',
 	'</div>',
@@ -312,24 +312,25 @@ function formatCandidatesTotal(resultsJson) {
 
     for(var c in cand) {
     	var candidateInfo = candidatesInfo[cand[c].party];	   
-    	contentString += S(
+    	contentString = S(
+			contentString,
 			'<tr class="left candidate-row">',
 				'<td>',					
-					'<div style="float:left; padding-right:10px; margin-top:8px">' + formatDivColorPatch(candidateInfo.color, 14, 14, 1) + '</div>',
+					'<div style="float:left; padding-right:10px; margin-top:8px">', formatDivColorPatch(candidateInfo.color, 14, 14, 1), '</div>',
 					'<div style="float:left" class="candidate-name" style="margin-top:4px; margin-bottom:4px;">',
-						'<div class="first-name">'+candidateInfo.firstName+'</div>',
-						'<div class="last-name" style="font-weight:bold;">'+candidateInfo.lastName+'</div>',
+						'<div class="first-name">',candidateInfo.firstName,'</div>',
+						'<div class="last-name" style="font-weight:bold;">',candidateInfo.lastName,'</div>',
 					'</div>',
 				'</td>',
-				'<td align="left"><b>' + cand[c].party + '</b></td>',
+				'<td align="left"><b>',cand[c].party,'</b></td>',
 				'<td align="center">',
-					'<div class="candidate-percent">'+formatPercent(cand[c].vsAll)+'</div>',
-					'<div class="candidate-votes">'+formatNumber(cand[c].votes)+'</div>',
+					'<div class="candidate-percent">',formatPercent(cand[c].vsAll),'</div>',
+					'<div class="candidate-votes">',formatNumber(cand[c].votes),'</div>',
 				'</td>',
 			'</tr>'				
 		);	
     }
-	contentString += '</tbody></table></div>';
+	contentString = S(contentString, '</tbody></table></div>');
 	return contentString;
 }
 
@@ -500,32 +501,35 @@ function formatNumber( nStr ) {
 
 function createInfoContent(region){
 
-	var contentString = '<div class="tiptitlebar">'
-	    +'<div style="float:left;">'
-	    +'<span class="tiptitletext">'+region+' Region</span>'
-	    +'</div><div style="clear:left;">'
-	    +'</div><div class="tipreporting">100% reporting (481/481)</div>'
-	    +'<table class="candidates" cellpadding="0" cellspacing="0">'
-	    +'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>'
-	    +'<th style="text-align:right; padding-bottom:4px;">Votes</th>'
-	    +'<th style="text-align:right; padding-bottom:4px;"></th></tr>'   
+	var contentString = S(
+		'<div class="tiptitlebar">',
+	    '<div style="float:left;">',
+	    '<span class="tiptitletext">'+region+' Region</span>',
+	    '</div><div style="clear:left;">',
+	    '</div><div class="tipreporting">100% reporting (481/481)</div>',
+	    '<table class="candidates" cellpadding="0" cellspacing="0">',
+	    '<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>',
+	    '<th style="text-align:right; padding-bottom:4px;">Votes</th>',
+	    '<th style="text-align:right; padding-bottom:4px;"></th></tr>'
+    );
 		
-	    for(var c in candidates) {
-	    	var candidateInfo = candidatesInfo[candidates[c].party];	    	
-	    	contentString = contentString + '<tr class="legend-candidate first" id="legend-candidate-"'+candidateInfo.fullName+'><td class="left"></td>';	    	
-	    	contentString = contentString + '<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">'+candidateInfo.firstName+'</div>';
-	    	contentString = contentString + '<div class="last-name" style="font-weight:bold;">'+candidateInfo.lastName+'</div></div></td>';
-	    	contentString = contentString + '<td style="text-align:center;">'+formatCandidateAreaPatch(candidates[c], 24)+
-	    	'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">'+formatPercent(candidates[c].vsAll)+'</div>'
-	    	+'<div class="candidate-votes">'+formatNumber(candidates[c].votes)+'</div></td><td class="right" style="text-align:right; padding-left:6px;">'
-	    	+'<div class="candidate-delegates"></div></td></tr>'		
-	    }
-		contentString = contentString + '</tbody></table></div><div class="click-for-local faint-text">Click for detailed results</div></div>';
+    for(var c in candidates) {
+    	var candidateInfo = candidatesInfo[candidates[c].party];	    	
+    	contentString = S(
+			contentString,
+			'<tr class="legend-candidate first" id="legend-candidate-"', candidateInfo.fullName, '><td class="left"></td>',	    	
+			'<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">',candidateInfo.firstName+'</div>',
+			'<div class="last-name" style="font-weight:bold;">', candidateInfo.lastName, '</div></div></td>',
+			'<td style="text-align:center;">', formatCandidateAreaPatch(candidates[c], 24),
+			'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">',formatPercent(candidates[c].vsAll),'</div>',
+			'<div class="candidate-votes">',formatNumber(candidates[c].votes),'</div></td><td class="right" style="text-align:right; padding-left:6px;">',
+			'<div class="candidate-delegates"></div></td></tr>'	
+		);
+    }
+	contentString = S(contentString, '</tbody></table></div><div class="click-for-local faint-text">Click for detailed results</div></div>');
 	    
 	return contentString;
 }
-
-var infowindow = new google.maps.InfoWindow();
 
 function getRegionJSON(region){
 	for(var k in presidentialResult){
@@ -611,7 +615,7 @@ function loadFeature( feature ) {
  	
  	
  	 	
- 	$("#map").bind( 'click mousemove', moveTip );
+ 	$body.bind( 'click mousemove', moveTip );
  	feature.setMap(map);
 	feature_map[getAbbr(feature)] = feature;
 }
