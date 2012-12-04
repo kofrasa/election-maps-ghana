@@ -134,6 +134,7 @@ document.write(
 		'body.tv div.legend-candidate, body.tv div.legend-filler { font-size:21px; font-weight:bold; }',
 		'td.legend-filler { border-color:transparent; }',
 		//'tr.legend-candidate td { width:20%; }',
+		'.candidate-row:hover { background-color: #eeeeee; }',
 		'tr.legend-candidate td { cursor:pointer; }',
 		'tr.legend-candidate.hover td, tr.legend-candidate:hover td { background-color:#F6F6F6; border: 1px solid #F6F6F6; border-top:1px solid #D9D9D9; border-bottom: 1px solid #D9D9D9; -webkit-transition: all 0.218s; -moz-transition: all 0.218s; transition: all 0.218s; }',
 		'tr.legend-candidate.hover td.left, tr.legend-candidate:hover td.left { border-left: 1px solid #D9D9D9; -webkit-transition: all 0.218s; -moz-transition: all 0.218s; transition: all 0.218s; }',
@@ -190,7 +191,18 @@ document.write(
 	'</div>'
 );
 
-var presidentialResult = {"GREATER ACCRA":{"NDC":8,"CPP":0,"GCPP":0,"UFP":10,"PNC":0,"PPP":0,"NPP":7,"INDP":0},"NORTHERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ASHANTI REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BRONG AHAFO REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"CENTRAL REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"EASTERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"VOLTA REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"WESTERN REGION":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"UPPER EAST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"UPPER WEST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0}};
+var presidentialResult = {
+	"GREATER ACCRA":{"NDC":8,"CPP":1,"GCPP":0,"UFP":10,"PNC":0,"PPP":0,"NPP":7,"INDP":1},
+	"NORTHERN REGION":{"NDC":2,"CPP":2,"GCPP":1,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":12},
+	"ASHANTI REGION":{"NDC":12,"CPP":3,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},
+	"BRONG AHAFO REGION":{"NDC":34,"CPP":4,"GCPP":67,"UFP":23,"PNC":77,"PPP":67,"NPP":0,"INDP":0},
+	"CENTRAL REGION":{"NDC":9,"CPP":5,"GCPP":6,"UFP":2,"PNC":9,"PPP":5,"NPP":8,"INDP":6},
+	"EASTERN REGION":{"NDC":4,"CPP":6,"GCPP":1,"UFP":4,"PNC":3,"PPP":6,"NPP":4,"INDP":8},
+	"VOLTA REGION":{"NDC":13,"CPP":7,"GCPP":32,"UFP":52,"PNC":5,"PPP":33,"NPP":55,"INDP":19},
+	"WESTERN REGION":{"NDC":5,"CPP":8,"GCPP":7,"UFP":4,"PNC":2,"PPP":5,"NPP":2,"INDP":5},
+	"UPPER EAST":{"NDC":7,"CPP":9,"GCPP":6,"UFP":7,"PNC":3,"PPP":4,"NPP":3,"INDP":8},
+	"UPPER WEST":{"NDC":2,"CPP":10,"GCPP":3,"UFP":7,"PNC":8,"PPP":4,"NPP":9,"INDP":6}
+};
 //$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get", function(data){
 //	presidentialResult = data;
 //});
@@ -219,13 +231,13 @@ function contentTable() {
 				
 			'</div>',
 			'<div id="legend">',
-			'<div id="sidebar">',
+			'<div id="sidebar" style="border-right:solid #dddddd 1px">',
 			'<div class="sidebar-header">',
 				'<div id="election-title" class="title-text">',
-					
+					T('title'),
 				'</div>',
-				'<div id="auto-update" class="subtitle-text">',
-					
+				'<div id="auto-update" class="subtitle-text">',	
+					T('subtitle'),
 				'</div>',
 				'<div id="sidebar-results-header">',
 					
@@ -274,27 +286,42 @@ function formatLegendTable( cells ) {
 }
 
 
-function formatCandidatesTotal(cand) {
+function formatCandidatesTotal(resultsJson) {
+	
+	var parties = {
+		NDC:0, NPP:0, PPP:0, CPP:0, UFP:0, PNC:0, GCPP:0, INDP:0
+	};
+	
+	// aggregate votes per party
+	for (k in resultsJson) {
+		region = resultsJson[k];
+		for (p in region) {
+			parties[p] = parties[p] + region[p];
+		}
+	}
+	
+	cand = getTopCandidates(convertToCandidates(parties),'votes',0);	
+	
 	var contentString = S(
 		'<div>',
-		'<table class="candidates" cellpadding="0" cellspacing="0">',
-	    	'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>',
+		'<table class="candidates" cellpadding="8px" cellspacing="0">',
+	    	'<tbody><tr><th style="text-align:left; padding-bottom:4px;">Candidate</th>',
 	    	'<th style="text-align:right; padding-bottom:4px;"></th>',
-	    	'<th style="text-align:right; padding-bottom:4px;">Votes</th></tr>'
+	    	'<th style="text-align:center; padding-bottom:4px;">Votes</th></tr>'
 	);
 
     for(var c in cand) {
     	var candidateInfo = candidatesInfo[cand[c].party];	   
     	contentString += S(
-			'<tr class="left">',
-				'<td>',
-					'<span>' + formatDivColorPatch(candidateInfo.color, 24, 24, 1) + '</span>',
-					'<span><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;">',
+			'<tr class="left candidate-row">',
+				'<td>',					
+					'<div style="float:left; padding-right:10px; margin-top:8px">' + formatDivColorPatch(candidateInfo.color, 14, 14, 1) + '</div>',
+					'<div style="float:left" class="candidate-name" style="margin-top:4px; margin-bottom:4px;">',
 						'<div class="first-name">'+candidateInfo.firstName+'</div>',
 						'<div class="last-name" style="font-weight:bold;">'+candidateInfo.lastName+'</div>',
-					'</div></span>',
+					'</div>',
 				'</td>',
-				'<td align="left">- ' + c + '</td>',
+				'<td align="left"><b>' + cand[c].party + '</b></td>',
 				'<td align="center">',
 					'<div class="candidate-percent">'+formatPercent(cand[c].vsAll)+'</div>',
 					'<div class="candidate-votes">'+formatNumber(cand[c].votes)+'</div>',
@@ -306,8 +333,8 @@ function formatCandidatesTotal(cand) {
 	return contentString;
 }
 
-
 $('#outer').html( contentTable() );
+$("#sidebar-results-header").html(formatCandidatesTotal(presidentialResult));
 
 var map;
 var useSidebar;
@@ -385,7 +412,6 @@ function getGeoJSON( url ) {
 function getAbbr(feature) {
 	return abbr[feature.geojsonProperties.ID];
 }
-
 
 
 var regions = {
@@ -514,32 +540,18 @@ function getRegionJSON(region){
 var tipOffset = { x:10, y:20 };
 var $maptip = $('#maptip'), tipHtml;
 
-function formatTip( feature ) {
-	if( ! feature ) 
+function formatTip() {
+	if( ! currentFeature ) 
 		return null;	
-	return createInfoContent(feature.geojsonProperties.ID, getRegionJSON(feature.geojsonProperties.ID));
-
-	
+	return createInfoContent(currentFeature.geojsonProperties.ID, getRegionJSON(currentFeature.geojsonProperties.ID));	
 }
 
 function moveTip( event ) {	
 	if(!currentFeature){
-		showTip( false );
+		return;
 	}
 	if( ! tipHtml ) return;
-	/*if( touch ) {
-		if( ! touch.moveTip ) return;
-		delete touch.moveTip;
-	}*/
 	var x = event.pageX, y = event.pageY;
-	if(
-		x < mapPixBounds.left  ||
-		x >= mapPixBounds.right  ||
-		y < mapPixBounds.top  ||
-		y >= mapPixBounds.bottom
-	) {
-		showTip( false );
-	}
 	x += tipOffset.x;
 	y += tipOffset.y;
 	var pad = 2;
@@ -562,8 +574,8 @@ function moveTip( event ) {
 	$maptip.css({ left:x, top:y });
 }
 
-function showTip( feature ) {
-	tipHtml = formatTip( feature );
+function showTip() {
+	tipHtml = formatTip();
 	if( tipHtml ) {
 		$maptip.html( tipHtml ).show();
 	}
