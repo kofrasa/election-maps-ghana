@@ -273,6 +273,40 @@ function formatLegendTable( cells ) {
 	);
 }
 
+
+function formatCandidatesTotal(cand) {
+	var contentString = S(
+		'<div>',
+		'<table class="candidates" cellpadding="0" cellspacing="0">',
+	    	'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>',
+	    	'<th style="text-align:right; padding-bottom:4px;"></th>',
+	    	'<th style="text-align:right; padding-bottom:4px;">Votes</th></tr>'
+	);
+
+    for(var c in cand) {
+    	var candidateInfo = candidatesInfo[cand[c].party];	   
+    	contentString += S(
+			'<tr class="left">',
+				'<td>',
+					'<span>' + formatDivColorPatch(candidateInfo.color, 24, 24, 1) + '</span>',
+					'<span><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;">',
+						'<div class="first-name">'+candidateInfo.firstName+'</div>',
+						'<div class="last-name" style="font-weight:bold;">'+candidateInfo.lastName+'</div>',
+					'</div></span>',
+				'</td>',
+				'<td align="left">- ' + c + '</td>',
+				'<td align="center">',
+					'<div class="candidate-percent">'+formatPercent(cand[c].vsAll)+'</div>',
+					'<div class="candidate-votes">'+formatNumber(cand[c].votes)+'</div>',
+				'</td>',
+			'</tr>'				
+		);	
+    }
+	contentString += '</tbody></table></div>';
+	return contentString;
+}
+
+
 $('#outer').html( contentTable() );
 
 var map;
@@ -482,8 +516,7 @@ var $maptip = $('#maptip'), tipHtml;
 
 function formatTip( feature ) {
 	if( ! feature ) 
-		return null;
-	
+		return null;	
 	return createInfoContent(feature.geojsonProperties.ID, getRegionJSON(feature.geojsonProperties.ID));
 
 	
