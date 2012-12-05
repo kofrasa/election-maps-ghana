@@ -225,10 +225,10 @@ function loadResult(){
 	var value;
 	if(params.contest === 'president'){
 		value = 'presidential-overview';
-		//results = presidentialResult;
+		results = presidentialResult;
 	}else{
 		value = 'paliamentary-overview';
-		//results = paliamentaryResult;
+		results = paliamentaryResult;
 	}
 	
 	$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get&value="+value, function(data){
@@ -487,28 +487,6 @@ function getGeoJSON( url ) {
 	getScript( cacheUrl( url ) );
 }
 
-function getAbbr(feature) {
-	return abbr[feature.geojsonProperties.ID];
-}
-
-var regions = {
-	'GA': 'Greater Accra',
-	'CR': 'Central',
-	'WR': 'Western',
-	'VR': 'Volta',
-	'ER': 'Eastern',
-	'AS': 'Ashanti',
-	'BA': 'Brong Ahafo',
-	'NR': 'Northern',
-	'UW': 'Upper West',
-	'UE': 'Upper East'
-};
-
-var abbr = abbr || {};
-for ( j in regions) {
-	abbr[regions[j]] = j;
-}
-
 var default_style = {
 	strokeColor: "#333333",
 	strokeOpacity: 1,
@@ -520,8 +498,6 @@ var default_style = {
 var feature_map = {};
 var feature_collection;
 var currentFeature, prevFeature, candidates;
-
-
 
 function formatCandidateAreaPatch( candidate, max ) {
 	var vsTop = candidate.vsTop;
@@ -645,8 +621,9 @@ function formatTip() {
 }
 
 function moveTip( event ) {	
-	showTip();
-	if( ! tipHtml ) return;
+	
+	if( ! showTip() ) return;
+	
 	var x = event.pageX, y = event.pageY;
 	x += tipOffset.x;
 	y += tipOffset.y;
@@ -674,14 +651,16 @@ function showTip() {
 	tipHtml = formatTip();
 	if( tipHtml ) {
 		$maptip.html( tipHtml ).show();
+		return true;
 	}
 	else {
-		$maptip.hide();		
+		$maptip.hide();	
+		return false;
 	}
 }
 
 function loadFeature( feature, color ) {
-	
+
 	// on click			
 	google.maps.event.addListener(feature, 'click', function (e) {
 		alert("TODO: Must show results summary for region - " + getAbbr(this));
@@ -705,21 +684,18 @@ function loadFeature( feature, color ) {
  	$body.bind( 'click mousemove', moveTip );
  	feature.set('fillColor', color || default_style.fillColor);
  	feature.setMap(map);
-	feature_map[getAbbr(feature)] = feature;
 }
 
-function loadRegion( region, style ) {
+function loadRegion( region, style ) {	
 	clearFeatures();
-	
 	var feature;
 	var cand;
+	var color;
 	region = region || "";
 	region = region.toUpperCase();
 	style = style || default_style;
-	var color;
+	
 	// load once
-	
-	
 	$("#sidebar-results-header").html(formatCandidatesTotal(results));
 	
 	if(!feature_collection){
@@ -729,8 +705,7 @@ function loadRegion( region, style ) {
 		feature = feature_collection[i]
 		cand = getTopCandidates(convertToCandidates(getRegionJSON(feature.geojsonProperties.ID)), 'votes', 24);
 		color = (cand[0].votes && cand[0].votes > 0) ? cand[0].color : null;
-		loadFeature(feature, color);
-		
+		loadFeature(feature, color);		
 	}
 	
 	initSelectors();
@@ -738,35 +713,20 @@ function loadRegion( region, style ) {
 }
 
 function clearFeatures(){
-	if(feature_collection){
+	if(feature_collection) {
+		var feature;
 		for(var i = 0; i< feature_collection.length; i++){
-			feature_collection[i].setMap(null);
+			feature = feature_collection[i];
+			google.maps.event.clearInstanceListeners(feature);
+			feature.setMap(null);			
 		}
 	}
-}
-
-function clearRegion( region ){
-	if (!region) {
-		for (var key in feature_map) {
-			feature = feature_map[key];
-			feature.setMap(null);
-		}
-	} else {
-		feature = feature_map[region.toUpperCase()];
-		feature.setMap(null);
-	}
-	//if (infowindow.getMap()){
-	//	infowindow.close();
-	//}
 }
 
 function loadView() {
-	showTip( false );
 	loadResult();
-	//resizeViewOnly();
-	//initSelectors();
 	loadRegion();
-	$('#spinner').hide();	
+	$('#spinner').hide();
 }
 
 var mapStyles = [
@@ -822,24 +782,25 @@ function initMap() {
    
     map = new gm.Map($('#map')[0], myOptions);    
     var mapType = new gm.StyledMapType( mapStyles );
-	map.mapTypes.set( 'simple', mapType );	
-	
+	map.mapTypes.set( 'simple', mapType );		
 }
 
 initMap();
 resizeViewOnly();
 
-function initSelectors() {  	
-		
-	var $selectors = $('#selectors');
-	$selectors.delegate( 'a.button', {
-		click: function( event ) {
+
+var $selectors;
+function initSelectors() {	
+	if (!$selectors) {
+		$selectors = $('#selectors a.button');
+		$selectors.bind('click', function( event ) {
+			$body.unbind();		
+			$selectors.removeClass( 'selected' );
+			$(this).addClass( 'selected' );
 			params.contest = this.id.split('-')[1];
-			$selectors.find('a.button').removeClass( 'selected' );
-			$(this).addClass( 'selected' );			
-			loadView();        				
-		}
-	});
+			loadView();
+		});
+	}
 }
              
 $window
