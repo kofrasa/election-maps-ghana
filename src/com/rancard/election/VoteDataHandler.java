@@ -69,6 +69,7 @@ public class VoteDataHandler extends HttpServlet {
 
 		String action = req.getParameter("action");
 		String value = req.getParameter("value");
+		String region = req.getParameter("region");
 		String response = "";
 		String responseType = "text/plain";
 
@@ -89,7 +90,7 @@ public class VoteDataHandler extends HttpServlet {
 				
 				query = new Query(value);
 				
-				response = convertEntitiesToJSON(datastore.prepare(query).asIterable(), value);
+				response = convertEntitiesToJSON(datastore.prepare(query).asIterable(), value, region);
 				responseType = "application/json";
 
 			}
@@ -108,12 +109,12 @@ public class VoteDataHandler extends HttpServlet {
 	}
 
 	@SuppressWarnings("unchecked")
-	private String convertEntitiesToJSON(Iterable<Entity> entities, String value){
+	private String convertEntitiesToJSON(Iterable<Entity> entities, String value, String region){
 		StringBuilder json = new StringBuilder();
 		if("presidential-overview".equals(value)) {			
 			json.append("{");
 			for(Entity e: entities) {
-				logger.log(Level.WARNING, "Parameters: region = "+e.getProperties().get(REGION));
+				
 				Map<String,Object> map = e.getProperties();
 				json.append("\"" + map.get(REGION) + "\":{");
 				//map.remove(REGION);
@@ -130,34 +131,7 @@ public class VoteDataHandler extends HttpServlet {
 			json.deleteCharAt(json.length()-1);
 			json.append("}");
 		} else if ("presidential-constituency".equals(value)) {
-			Map<String,Object> table = new HashMap<String,Object>();
-			Map<String,Object> region;
-			Map<String,Object> constituency;
-			
-			for (Entity e: entities) {		
-				Map<String,Object> map = e.getProperties();
-				// get region
-				region = (Map<String,Object>)table.get(map.get(REGION).toString());
-				if (region == null) {
-					region = new HashMap<String,Object>();
-					table.put(map.get(REGION).toString(), region);
-				}
-				// get constituency
-				constituency = (Map<String,Object>)region.get(map.get(CONSTITUENCY).toString());
-				if (constituency == null) {
-					constituency = new HashMap<String,Object>();
-					region.put(map.get(CONSTITUENCY).toString(), constituency);
-				}
-				
-				// store party results
-				for (String party: map.keySet()) {
-					if(party.equals(REGION)||party.equals(CONSTITUENCY)){
-						continue;
-					}
-					constituency.put(party, Integer.valueOf(map.get(party).toString()));
-				}
-			}
-			json.append(new Gson().toJson(table));
+			json = convertEntitiesToJSONPresidentialRegional(entities, region);
 
 		} else if ("parliamentary-overview".equals(value)) {
 			json.append("{");
@@ -185,6 +159,68 @@ public class VoteDataHandler extends HttpServlet {
 		return json.toString();
 	}
 	
+	private StringBuilder convertEntitiesToJSONPaliamentaryRegional(Iterable<Entity> entities, String regionValue){
+		StringBuilder json = new StringBuilder();
+		return json;
+	}
+	
+	
+	private StringBuilder convertEntitiesToJSONPresidentialRegional(Iterable<Entity> entities, String regionValue){
+		logger.log(Level.WARNING, "Parameters: region = "+regionValue);
+		StringBuilder json = new StringBuilder();
+		
+		if(regionValue == null|| regionValue.equals("")){
+			Map<String,Object> table = new HashMap<String,Object>();
+			Map<String,Object> region;
+			Map<String,Object> constituency;
+			json.append("{");
+			for (Entity e: entities) {		
+				Map<String,Object> map = e.getProperties();
+			// get region
+				region = (Map<String,Object>)table.get(map.get(REGION).toString());
+				if (region == null) {
+					region = new HashMap<String,Object>();
+					table.put(map.get(REGION).toString(), region);
+				}
+				// get constituency
+				constituency = (Map<String,Object>)region.get(map.get(CONSTITUENCY).toString());
+				if (constituency == null) {
+					constituency = new HashMap<String,Object>();
+					region.put(map.get(CONSTITUENCY).toString(), constituency);
+				}
+			
+			// store party results
+				for (String party: map.keySet()) {
+					if(party.equals(REGION)||party.equals(CONSTITUENCY)){
+						continue;
+					}
+					constituency.put(party, Integer.valueOf(map.get(party).toString()));
+				}
+			}
+		}else{
+			json.append("{");
+			for (Entity e: entities){
+				if(e.getProperty(REGION).toString().equalsIgnoreCase(regionValue)){
+					Map<String,Object> map = e.getProperties();
+					json.append("\"" + map.get(CONSTITUENCY) + "\":{");
+					//map.remove(REGION);
+					for(String key: map.keySet()) {
+						if(key.equals(REGION) || key.equals(CONSTITUENCY)){
+							continue;
+						}
+						json.append("\"" + key + "\":");
+						json.append(Integer.valueOf(map.get(key).toString())).append(",");										
+					}
+					json.deleteCharAt(json.length()-1);
+					json.append("},");					
+				}								
+			}
+			json.deleteCharAt(json.length()-1);
+			json.append("}");
+		}
+		
+		return json;
+	}
 
 
 	private String organizeAndSave(String value) throws Exception {

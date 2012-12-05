@@ -76,7 +76,7 @@ public class SpreadsheetHandler {
 		return worksheets;
 	}
 	
-	public List<ListEntry> getWorksheetEntries(String worksheetTitle, String[] columns) throws Exception{
+	public List<ListEntry> getWorksheetEntries(String worksheetTitle) throws Exception{
 		WorksheetEntry worksheet = null;
 		for(WorksheetEntry e: worksheets){
 			if(e.getTitle().getPlainText().equalsIgnoreCase(worksheetTitle)){
