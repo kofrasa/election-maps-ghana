@@ -225,10 +225,10 @@ function loadResult(){
 	var value;
 	if(params.contest === 'president'){
 		value = 'presidential-overview';
-		results = presidentialResult;
+		//results = presidentialResult;
 	}else{
 		value = 'paliamentary-overview';
-		results = paliamentaryResult;
+		//results = paliamentaryResult;
 	}
 	
 	$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get&value="+value, function(data){
