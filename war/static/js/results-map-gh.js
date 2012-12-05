@@ -89,6 +89,7 @@ document.write(
 		'#maptip { position:absolute; z-index:10; border:1px solid #333; background:white; color:#222; white-space: nowrap; display:none; width:300px; }',
 		'div.candidate-name { line-height:1em; }',
 		'div.first-name { font-size:85%; }',
+		'div.first-namep { font-size:100%; }',
 		'#election-title { padding-left:3px; }',
 		'body.tv #election-title { font-size:24px; font-weight:bold; }',
 		'body.tv #election-date { font-size:16px; color:#222; }',
@@ -203,14 +204,37 @@ var presidentialResult = {
 	"UPPER EAST":{"NDC":7,"CPP":9,"GCPP":6,"UFP":7,"PNC":3,"PPP":4,"NPP":3,"INDP":8},
 	"UPPER WEST":{"NDC":2,"CPP":10,"GCPP":3,"UFP":7,"PNC":8,"PPP":4,"NPP":9,"INDP":6}
 };
+var paliamentaryResult = {
+	"VOLTA":{"NDC":0,"URP":0,"CPP":0,"GFP":0,"NDP":0,"PNC":0,"PPP":0,"YPP":0,"NVP":0,"NPP":0,"INDP":0},
+	"GREATER ACCRA":{"NDC":0,"IPP":0,"URP":0,"CPP":0,"DPP":0,"NDP":0,"PNC":0,"PPP":0,"NVP":0,"NPP":1,"INDP":0},
+	"WESTERN":{"NDC":0,"CPP":0,"NDP":0,"PPP":0,"PNC":0,"NPP":0,"INDP":0},
+	"UPPER WEST":{"NDC":0,"URP":0,"CPP":0,"DPP":0,"NDP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},
+	"UPPER EAST":{"NDC":0,"CPP":0,"NDP":0,"PPP":0,"PNC":0,"NPP":0,"INDP":0},
+	"ASHANTI":{"NDC":0,"CPP":0,"IPP":0,"DPP":0,"GCPP":0,"NDP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},
+	"CENTRAL":{"NDC":0,"URP":0,"CPP":0,"DPP":0,"NDP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},
+	"BRONG AHAFO":{"NDC":0,"URP":0,"CPP":0,"MDC":0,"NDP":0,"PARTY":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},
+	"NORTHERN":{"NDC":0,"IPP":0,"CPP":0,"DPP":0,"NDP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},
+	"EASTERN":{"CPP":0,"IPP":0,"GCPP":0,"NDP":0,"PPP":0,"NPP":0,"INDP":0,"NDC":0,"GFP":0,"DPP":0,"PNC":0,"NVP":0}
+};
 
 presidentialConstituency = {
 	
 };
-
-//$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get", function(data){
-//	presidentialResult = data;
-//});
+var results;
+function loadResult(){
+	var value;
+	if(params.contest === 'president'){
+		value = 'presidential-overview';
+		results = presidentialResult;
+	}else{
+		value = 'paliamentary-overview';
+		results = paliamentaryResult;
+	}
+	
+	$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get&value="+value, function(data){
+		result = data;
+	});
+}
 
 function contentTable() {
 	function button( contest, index, contests ) {
@@ -290,12 +314,23 @@ function formatLegendTable( cells ) {
 	);
 }
 
+function getParties(resultsJson){
+	var parties = {};
+	var i = 0;
+	for (k in resultsJson) {
+		region = resultsJson[k];
+		for(p in region){
+			parties[p] = 0;
+			i = i+ 1;
+		}
+	}
+	return parties;
+}
 
 function formatCandidatesTotal(resultsJson) {
+	//var parties = {};	
 	
-	var parties = {
-		NDC:0, NPP:0, PPP:0, CPP:0, UFP:0, PNC:0, GCPP:0, INDP:0
-	};
+	var parties = getParties(resultsJson);
 	
 	// aggregate votes per party
 	for (k in resultsJson) {
@@ -306,35 +341,65 @@ function formatCandidatesTotal(resultsJson) {
 	}
 	
 	cand = getTopCandidates(convertToCandidates(parties),'votes',0);	
+	if(params.contest === 'president'){
+		var contentString = S(
+			'<div>',
+			'<table class="candidates" cellpadding="8px" cellspacing="0">',
+				'<tbody><tr><th style="text-align:left; padding-bottom:4px;">Candidate</th>',
+				'<th style="text-align:right; padding-bottom:4px;"></th>',
+				'<th style="text-align:center; padding-bottom:4px;">Votes</th></tr>'
+		);
 	
-	var contentString = S(
-		'<div>',
-		'<table class="candidates" cellpadding="8px" cellspacing="0">',
-	    	'<tbody><tr><th style="text-align:left; padding-bottom:4px;">Candidate</th>',
-	    	'<th style="text-align:right; padding-bottom:4px;"></th>',
-	    	'<th style="text-align:center; padding-bottom:4px;">Votes</th></tr>'
-	);
-
-    for(var c in cand) {
-    	var candidateInfo = candidatesInfo[cand[c].party];	   
-    	contentString = S(
-			contentString,
-			'<tr class="left candidate-row">',
-				'<td>',					
-					'<div style="float:left; padding-right:10px; margin-top:8px">', formatDivColorPatch(candidateInfo.color, 14, 14, 1), '</div>',
-					'<div style="float:left" class="candidate-name" style="margin-top:4px; margin-bottom:4px;">',
-						'<div class="first-name">',candidateInfo.firstName,'</div>',
-						'<div class="last-name" style="font-weight:bold;">',candidateInfo.lastName,'</div>',
-					'</div>',
-				'</td>',
-				'<td align="left"><b>',cand[c].party,'</b></td>',
-				'<td align="center">',
-					'<div class="candidate-percent">',formatPercent(cand[c].vsAll),'</div>',
-					'<div class="candidate-votes">',formatNumber(cand[c].votes),'</div>',
-				'</td>',
-			'</tr>'				
-		);	
-    }
+		for(var c in cand) {
+			var candidateInfo = candidatesInfo[cand[c].party];	   
+			contentString = S(
+					contentString,
+					'<tr class="left candidate-row">',
+					'<td>',					
+						'<div style="float:left; padding-right:10px; margin-top:8px">', formatDivColorPatch(cand[c].color, 14, 14, 1), '</div>',
+						'<div style="float:left" class="candidate-name" style="margin-top:4px; margin-bottom:4px;">',
+							'<div class="first-name">',candidateInfo.firstName,'</div>',
+							'<div class="last-name" style="font-weight:bold;">',candidateInfo.lastName,'</div>',
+							'</div>',
+							'</td>',
+						'<td align="left"><b>',cand[c].party,'</b></td>',
+					'<td align="center">',
+						'<div class="candidate-percent">',formatPercent(cand[c].vsAll),'</div>',
+						'<div class="candidate-votes">',formatNumber(cand[c].votes),'</div>',
+					'</td>',
+					'</tr>'				
+			);	
+		}		
+	}else{
+		var contentString = S(
+				'<div>',
+				'<table class="candidates" cellpadding="8px" cellspacing="0">',
+					'<tbody><tr><th style="text-align:left; padding-bottom:4px;">Party</th>',
+					'<th style="text-align:right; padding-bottom:4px;"></th>',
+					'<th style="text-align:center; padding-bottom:4px;">Seats</th></tr>'
+			);
+		
+		for(var c in cand) {
+			var candidateInfo = candidatesInfo[cand[c].party];	   
+			contentString = S(
+					contentString,
+					'<tr class="left candidate-row">',
+					'<td>',					
+						'<div style="float:left; padding-right:10px; margin-top:0px">', formatDivColorPatch(cand[c].color, 14, 14, 1), '</div>',
+						'<div style="float:left" class="candidate-name" style="margin-top:4px; margin-bottom:4px;">',
+							'<div class="first-namep"><b>',cand[c].party,'</b></div>',
+							//'<div class="last-name" style="font-weight:bold;">',candidateInfo.lastName,'</div>',
+							'</div>',
+							'</td>',
+						'<td align="left"><b></b></td>',
+					'<td align="center">',
+						'<div class="candidate-percent">',formatPercent(cand[c].vsAll),'</div>',
+						'<div class="candidate-votes">',formatNumber(cand[c].votes),'</div>',
+					'</td>',
+					'</tr>'				
+			);	
+		}		
+	}
 	contentString = S(contentString, '</tbody></table></div>');
 	return contentString;
 }
@@ -343,12 +408,10 @@ function formatCandidatesTotal(resultsJson) {
 function formatCandidatesConstituency(resultsJson) {
 	// aggregate results for each constituency
 	
-	
 }
 
 
 $('#outer').html( contentTable() );
-$("#sidebar-results-header").html(formatCandidatesTotal(presidentialResult));
 
 var map;
 var useSidebar;
@@ -478,7 +541,7 @@ function formatCandidateAreaPatch( candidate, max ) {
 	var margin1 = Math.floor( ( max - size ) / 2 );
 	var margin2 = max - size - margin1;
 	
-	var color = candidatesInfo[candidate.party].color || '#FFFFFF';  // TEMP
+	var color = candidate.color || '#FFFFFF';  // TEMP
 	return S(
 		'<div style="margin:', margin1, 'px ', margin2, 'px ', margin2, 'px ', margin1, 'px;">',
 			formatDivColorPatch( color, size, size ),
@@ -512,42 +575,68 @@ function formatNumber( nStr ) {
 	return x1 + x2;
 }
 
-function createInfoContent(region){
-
-	var contentString = S(
-		'<div class="tiptitlebar">',
-	    '<div style="float:left;">',
-	    '<span class="tiptitletext">'+region+' Region</span>',
-	    '</div><div style="clear:left;">',
-	    '</div><div class="tipreporting">100% reporting (481/481)</div>',
-	    '<table class="candidates" cellpadding="0" cellspacing="0">',
-	    '<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>',
-	    '<th style="text-align:right; padding-bottom:4px;">Votes</th>',
-	    '<th style="text-align:right; padding-bottom:4px;"></th></tr>'
-    );
-		
-    for(var c in candidates) {
-    	var candidateInfo = candidatesInfo[candidates[c].party];	    	
-    	contentString = S(
-			contentString,
-			'<tr class="legend-candidate first" id="legend-candidate-"', candidateInfo.fullName, '><td class="left"></td>',	    	
-			'<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">',candidateInfo.firstName+'</div>',
-			'<div class="last-name" style="font-weight:bold;">', candidateInfo.lastName, '</div></div></td>',
-			'<td style="text-align:center;">', formatCandidateAreaPatch(candidates[c], 24),
-			'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">',formatPercent(candidates[c].vsAll),'</div>',
-			'<div class="candidate-votes">',formatNumber(candidates[c].votes),'</div></td><td class="right" style="text-align:right; padding-left:6px;">',
-			'<div class="candidate-delegates"></div></td></tr>'	
+function createInfoContent(region, candidates){
+	if(params.contest === 'president'){
+		var contentString = S(
+			'<div class="tiptitlebar">',
+			'<div style="float:left;">',
+			'<span class="tiptitletext">'+region+' Region</span>',
+			'</div><div style="clear:left;">',
+			'</div><div class="tipreporting">100% reporting (481/481)</div>',
+			'<table class="candidates" cellpadding="0" cellspacing="0">',
+			'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>',
+			'<th style="text-align:right; padding-bottom:4px;">Votes</th>',
+			'<th style="text-align:right; padding-bottom:4px;"></th></tr>'
 		);
-    }
+		
+		for(var c in candidates) {
+			var candidateInfo = candidatesInfo[candidates[c].party];	    	
+			contentString = S(
+				contentString,
+				'<tr class="legend-candidate first" id="legend-candidate-"', candidateInfo.fullName, '><td class="left"></td>',	    	
+				'<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">',candidateInfo.firstName+'</div>',
+				'<div class="last-name" style="font-weight:bold;">', candidateInfo.lastName, '</div></div></td>',
+				'<td style="text-align:center;">', formatCandidateAreaPatch(candidates[c], 24),
+				'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">',formatPercent(candidates[c].vsAll),'</div>',
+				'<div class="candidate-votes">',formatNumber(candidates[c].votes),'</div></td><td class="right" style="text-align:right; padding-left:6px;">',
+				'<div class="candidate-delegates"></div></td></tr>'	
+			);
+		}
+	}else{
+		var contentString = S(
+				'<div class="tiptitlebar">',
+				'<div style="float:left;">',
+				'<span class="tiptitletext">'+region+' Region</span>',
+				'</div><div style="clear:left;">',
+				'</div><div class="tipreporting">100% reporting (481/481)</div>',
+				'<table class="candidates" cellpadding="0" cellspacing="0">',
+				'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Party</th>',
+				'<th style="text-align:right; padding-bottom:4px;">Seats</th>',
+				'<th style="text-align:right; padding-bottom:4px;"></th></tr>'
+			);
+			
+			for(var c in candidates) {				    	
+				contentString = S(
+					contentString,
+					'<tr class="legend-candidate first" id="legend-candidate-"', candidates[c].party, '><td class="left"></td>',	    	
+					'<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px; font-size:100%"><div class="first-name"><b>',candidates[c].party+'</b></div>',
+					//'<div class="last-name" style="font-weight:bold;">', candidates[c].party, '</div></div></td>',
+					'<td style="text-align:center;">', formatCandidateAreaPatch(candidates[c], 24),
+					'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">',formatPercent(candidates[c].vsAll),'</div>',
+					'<div class="candidate-votes">',formatNumber(candidates[c].votes),'</div></td><td class="right" style="text-align:right; padding-left:6px;">',
+					'<div class="candidate-delegates"></div></td></tr>'	
+				);
+			}
+	}
 	contentString = S(contentString, '</tbody></table></div><div class="click-for-local faint-text">Click for detailed results</div></div>');
 	    
 	return contentString;
 }
 
 function getRegionJSON(region){
-	for(var k in presidentialResult){
+	for(var k in results){
 		if(k.toString().toLowerCase().indexOf(region.toLowerCase()) !== -1){
-			return presidentialResult[k];			
+			return results[k];			
 		}
 	}
 }
@@ -563,7 +652,7 @@ function formatTip() {
 	if (currentFeature != prevFeature) {
 		candidates = getTopCandidates(convertToCandidates(getRegionJSON(currentFeature.geojsonProperties.ID)), 'votes', 24);
 	}
-	return createInfoContent(currentFeature.geojsonProperties.ID);
+	return createInfoContent(currentFeature.geojsonProperties.ID, candidates);
 }
 
 function moveTip( event ) {	
@@ -631,6 +720,8 @@ function loadFeature( feature, color ) {
 }
 
 function loadRegion( region, style ) {
+	clearFeatures();
+	
 	var feature;
 	var cand;
 	region = region || "";
@@ -638,16 +729,31 @@ function loadRegion( region, style ) {
 	style = style || default_style;
 	var color;
 	// load once
-	if (!feature_collection) {
+	
+	initSelectors();
+	$("#sidebar-results-header").html(formatCandidatesTotal(results));
+	
+	if(!feature_collection){
 		feature_collection = new GeoJSON( geojson, style );
-		for (var i=0; i < feature_collection.length; i++) {
-			feature = feature_collection[i]
-			cand = getTopCandidates(convertToCandidates(getRegionJSON(feature.geojsonProperties.ID)), 'votes', 24);
-			color = (cand[0].votes && cand[0].votes > 1) ? candidatesInfo[cand[0].party].color : null;
-			loadFeature(feature, color);
+	}
+	for (var i=0; i < feature_collection.length; i++) {
+		feature = feature_collection[i]
+		cand = getTopCandidates(convertToCandidates(getRegionJSON(feature.geojsonProperties.ID)), 'votes', 24);
+		color = (cand[0].votes && cand[0].votes > 1) ? cand[0].color : null;
+		loadFeature(feature, color);
+		
+	}
+	
+	
+	//reloadTimer.set( loadView, opt.reloadTime );
+}
+
+function clearFeatures(){
+	if(feature_collection){
+		for(var i = 0; i< feature_collection.length; i++){
+			feature_collection[i].setMap(null);
 		}
 	}
-	//reloadTimer.set( loadView, opt.reloadTime );
 }
 
 function clearRegion( region ){
@@ -666,8 +772,10 @@ function clearRegion( region ){
 }
 
 function loadView() {
-	resizeViewOnly();
-	initSelectors();
+	showTip( false );
+	//resizeViewOnly();
+	//initSelectors();
+	loadRegion();
 	$('#spinner').hide();	
 }
 
@@ -724,16 +832,22 @@ function initMap() {
    
     map = new gm.Map($('#map')[0], myOptions);    
     var mapType = new gm.StyledMapType( mapStyles );
-	map.mapTypes.set( 'simple', mapType );
+	map.mapTypes.set( 'simple', mapType );	
 	
-	// load ghana
-	loadRegion();
 }
 
 initMap();
 resizeViewOnly();
 
-function initSelectors() {        		
+function initSelectors() {  
+	loadResult();
+	
+	$('#contestSelector').bindSelector( 'change keyup', function() {
+		params.contest = this.value;
+		//enableStateContests();		
+		loadView();
+	});
+	
 	var $selectors = $('#selectors');
 	$selectors.delegate( 'a.button', {
 		click: function( event ) {
