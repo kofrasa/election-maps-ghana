@@ -6,15 +6,22 @@ var candidatesInfo = {
 	CPP: { color: '#8A5C2E', firstName: 'Abu Sakara', lastName: 'Foster', fullName: 'Abu Sakara Foster'},
 	INDP: { color: '#EE00B5', firstName: 'Jacob Osei', lastName: 'Yeboah', fullName: 'Jacob Osei Yeboah'},
 	GCPP: { color: '#1700E8', firstName: 'Herbert', lastName: 'Lartey', fullName: 'Herbert Lartey'},
-	UFP: { color: '#336633', firstName: 'Akwasi Addai', lastName: 'Odike', fullName: 'Akwasi Addai Odike'}
+	UFP: { color: '#336633', firstName: 'Akwasi Addai', lastName: 'Odike', fullName: 'Akwasi Addai Odike'}	
 }
 
 function Candidate(party, constituency, votes ) {
     this.party = party || '';
     this.constituency = constituency || 'Ghana';
-    this.votes = votes || 0;
+    this.votes = votes || 0;    
     this.vsAll = null;
     this.vsTop = null;
+    
+    
+    if(candidatesInfo[party] == null){
+    	this.color = '#336633';
+    }else{
+    	this.color = candidatesInfo[party].color;
+    }
 }
 
 function convertToCandidates(json){
@@ -75,8 +82,8 @@ function getTopCandidates( candidates, sortBy, max ) {
 		
 		// Sort in descending order and trim
 		top = top.reverse().slice( 0, max );
-		//while( top.length  &&  ! top[top.length-1].votes )
-			//top.pop();
+		while( top.length  &&  ! top[top.length-1].votes && top.length >= 5)
+			top.pop();
 		
 		// Finally can compare each candidate with the topmost
 		if( top.length ) {

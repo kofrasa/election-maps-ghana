@@ -225,16 +225,17 @@ function loadResult(){
 	var value;
 	if(params.contest === 'president'){
 		value = 'presidential-overview';
-		results = presidentialResult;
+		//results = presidentialResult;
 	}else{
 		value = 'paliamentary-overview';
-		results = paliamentaryResult;
+		//results = paliamentaryResult;
 	}
 	
 	$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get&value="+value, function(data){
-		result = data;
+		results = data;
 	});
 }
+loadResult();
 
 function contentTable() {
 	function button( contest, index, contests ) {
@@ -490,7 +491,6 @@ function getAbbr(feature) {
 	return abbr[feature.geojsonProperties.ID];
 }
 
-
 var regions = {
 	'GA': 'Greater Accra',
 	'CR': 'Central',
@@ -521,17 +521,6 @@ var feature_map = {};
 var feature_collection;
 var currentFeature, prevFeature, candidates;
 
-
-function sortCandidates(candidates){
-	var cand = [];
-	for(var k in candidates){
-		if(k.toString() === "REGION"){
-			continue;
-		}
-		cand.push([k.toString(), candidates[k]])
-	}
-	return cand;
-}
 
 
 function formatCandidateAreaPatch( candidate, max ) {
@@ -730,7 +719,7 @@ function loadRegion( region, style ) {
 	var color;
 	// load once
 	
-	initSelectors();
+	
 	$("#sidebar-results-header").html(formatCandidatesTotal(results));
 	
 	if(!feature_collection){
@@ -739,12 +728,12 @@ function loadRegion( region, style ) {
 	for (var i=0; i < feature_collection.length; i++) {
 		feature = feature_collection[i]
 		cand = getTopCandidates(convertToCandidates(getRegionJSON(feature.geojsonProperties.ID)), 'votes', 24);
-		color = (cand[0].votes && cand[0].votes > 1) ? cand[0].color : null;
+		color = (cand[0].votes && cand[0].votes > 0) ? cand[0].color : null;
 		loadFeature(feature, color);
 		
 	}
 	
-	
+	initSelectors();
 	//reloadTimer.set( loadView, opt.reloadTime );
 }
 
@@ -773,6 +762,7 @@ function clearRegion( region ){
 
 function loadView() {
 	showTip( false );
+	loadResult();
 	//resizeViewOnly();
 	//initSelectors();
 	loadRegion();
@@ -839,15 +829,8 @@ function initMap() {
 initMap();
 resizeViewOnly();
 
-function initSelectors() {  
-	loadResult();
-	
-	$('#contestSelector').bindSelector( 'change keyup', function() {
-		params.contest = this.value;
-		//enableStateContests();		
-		loadView();
-	});
-	
+function initSelectors() {  	
+		
 	var $selectors = $('#selectors');
 	$selectors.delegate( 'a.button', {
 		click: function( event ) {
