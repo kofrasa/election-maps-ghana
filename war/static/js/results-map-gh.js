@@ -207,6 +207,7 @@ var presidentialResult = {
 presidentialConstituency = {
 	
 };
+
 //$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get", function(data){
 //	presidentialResult = data;
 //});
@@ -341,6 +342,7 @@ function formatCandidatesTotal(resultsJson) {
 
 function formatCandidatesConstituency(resultsJson) {
 	// aggregate results for each constituency
+	
 	
 }
 
@@ -634,14 +636,15 @@ function loadRegion( region, style ) {
 	region = region || "";
 	region = region.toUpperCase();
 	style = style || default_style;
-	
+	var color;
 	// load once
 	if (!feature_collection) {
 		feature_collection = new GeoJSON( geojson, style );
 		for (var i=0; i < feature_collection.length; i++) {
 			feature = feature_collection[i]
 			cand = getTopCandidates(convertToCandidates(getRegionJSON(feature.geojsonProperties.ID)), 'votes', 24);
-			loadFeature(feature, candidatesInfo[cand[0].party].color);
+			color = (cand[0].votes && cand[0].votes > 1) ? candidatesInfo[cand[0].party].color : null;
+			loadFeature(feature, color);
 		}
 	}
 	//reloadTimer.set( loadView, opt.reloadTime );
