@@ -134,7 +134,7 @@ document.write(
 		'body.tv div.legend-candidate, body.tv div.legend-filler { font-size:21px; font-weight:bold; }',
 		'td.legend-filler { border-color:transparent; }',
 		//'tr.legend-candidate td { width:20%; }',
-		//'.candidate-row:hover { background-color: #eeeeee; }',
+		'tr.candidate-row:hover { background-color: #eeeeee; }',
 		'tr.legend-candidate td { cursor:pointer; }',
 		'tr.legend-candidate.hover td, tr.legend-candidate:hover td { background-color:#F6F6F6; border: 1px solid #F6F6F6; border-top:1px solid #D9D9D9; border-bottom: 1px solid #D9D9D9; -webkit-transition: all 0.218s; -moz-transition: all 0.218s; transition: all 0.218s; }',
 		'tr.legend-candidate.hover td.left, tr.legend-candidate:hover td.left { border-left: 1px solid #D9D9D9; -webkit-transition: all 0.218s; -moz-transition: all 0.218s; transition: all 0.218s; }',
@@ -202,6 +202,10 @@ var presidentialResult = {
 	"WESTERN REGION":{"NDC":5,"CPP":8,"GCPP":7,"UFP":4,"PNC":2,"PPP":5,"NPP":2,"INDP":5},
 	"UPPER EAST":{"NDC":7,"CPP":9,"GCPP":6,"UFP":7,"PNC":3,"PPP":4,"NPP":3,"INDP":8},
 	"UPPER WEST":{"NDC":2,"CPP":10,"GCPP":3,"UFP":7,"PNC":8,"PPP":4,"NPP":9,"INDP":6}
+};
+
+presidentialConstituency = {
+	
 };
 //$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get", function(data){
 //	presidentialResult = data;
@@ -334,6 +338,13 @@ function formatCandidatesTotal(resultsJson) {
 	return contentString;
 }
 
+
+function formatCandidatesConstituency(resultsJson) {
+	// aggregate results for each constituency
+	
+}
+
+
 $('#outer').html( contentTable() );
 $("#sidebar-results-header").html(formatCandidatesTotal(presidentialResult));
 
@@ -438,7 +449,7 @@ var default_style = {
 	strokeOpacity: 1,
 	strokeWeight: 2,
 	fillColor: "#333333",
-	fillOpacity: 0.25
+	fillOpacity: 0.5
 };
 
 var feature_map = {};
@@ -589,7 +600,7 @@ function showTip() {
 	}
 }
 
-function loadFeature( feature ) {
+function loadFeature( feature, color ) {
 	
 	// on click			
 	google.maps.event.addListener(feature, 'click', function (e) {
@@ -601,59 +612,37 @@ function loadFeature( feature ) {
  		// use 'this' to access regions	
  		prevFeature = currentFeature;
 		currentFeature = this;
-		moveTip(e);		
-		color = candidatesInfo[candidates[0].party].color;
-		this.set('fillColor', color);
+		moveTip(e);
  	});
 
 	// on mouseout
  	google.maps.event.addListener(feature, 'mouseout', function (e) {
  		// use 'this' to access regions
- 		this.set('fillColor', default_style.fillColor);
+ 		//this.set('fillColor', default_style.fillColor);
  		currentFeature = null; 		
  	});	
  	
- 	
- 	 	
  	$body.bind( 'click mousemove', moveTip );
+ 	feature.set('fillColor', color || default_style.fillColor);
  	feature.setMap(map);
 	feature_map[getAbbr(feature)] = feature;
 }
 
 function loadRegion( region, style ) {
 	var feature;
+	var cand;
 	region = region || "";
 	region = region.toUpperCase();
 	style = style || default_style;
-
-	if (!feature_map[region]) {
-		// load once
-		if (!feature_collection) {
-			feature_collection = new GeoJSON( geojson, style );
-		}	
-
-		if (region) {
-			for (var i = 0; i < feature_collection.length; i++) {
-				if (abbr[feature_collection[i].geojsonProperties.ID] === region) {
-					feature = feature_collection[i];
-					break;
-				}
-			}
-			if (!feature) {
-				console.log("Region ", region , " was not found.");
-				return;
-			}
-		} else {
-			feature = feature_collection;
+	
+	// load once
+	if (!feature_collection) {
+		feature_collection = new GeoJSON( geojson, style );
+		for (var i=0; i < feature_collection.length; i++) {
+			feature = feature_collection[i]
+			cand = getTopCandidates(convertToCandidates(getRegionJSON(feature.geojsonProperties.ID)), 'votes', 24);
+			loadFeature(feature, candidatesInfo[cand[0].party].color);
 		}
-	}	
-
-	if (feature.length) {
-		for (var i=0; i < feature.length; i++) {
-			loadFeature(feature[i]);
-		}		
-	} else {
-		loadFeature(feature);
 	}
 	//reloadTimer.set( loadView, opt.reloadTime );
 }
