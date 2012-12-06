@@ -194,7 +194,7 @@ document.write(
 
 function renderConstituencyStyles() {
 	var styles = S(
-		'<style>'
+		'<style>',
 			'#subregion_div { width:815px; font-family:Helvetica; font-size:14px; display: none;',
 			'position:absolute; background:#fff; z-index:1001; }',
 			'#subregion_title { padding: 10px; padding-left:15px; }',
