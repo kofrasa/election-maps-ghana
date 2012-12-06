@@ -249,7 +249,7 @@ function loadResult(){
 		value = 'presidential-overview';
 		results = presidentialResult;
 	}else{
-		value = 'paliamentary-overview';
+		value = 'parliamentary-overview';
 		results = paliamentaryResult;
 	}
 	
@@ -277,7 +277,7 @@ function contentTable() {
 		'<div>',
 			'<div id="selectors">',
 				'<div style="margin:0; padding:4px;">',
-					_.map( [ 'president', 'paliamentary' ], button )
+					_.map( [ 'president', 'parliamentary' ], button )
 						.join(''),
 				'</div>',
 				
