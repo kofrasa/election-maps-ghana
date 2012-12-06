@@ -438,12 +438,12 @@ function formatLegendTable( cells ) {
 
 function getParties(resultsJson){
 	var parties = {};
-	var i = 0;
+	
 	for (k in resultsJson) {
 		region = resultsJson[k];
 		for(p in region){
 			parties[p] = 0;
-			i = i+ 1;
+			
 		}
 	}
 	return parties;

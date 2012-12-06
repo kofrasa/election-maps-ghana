@@ -3,7 +3,7 @@ loadStrings({
 	"testData": "TEST DATA", 
 	"clickFor-president": "Click for Presidential results", 
 	"clickFor-parliamentary": "Click for Parliamentary results", 
-	"presidentButton": "Presdential", 
+	"presidentButton": "Presidential", 
 	"parliamentaryButton": "Parliamentary",
 	"decimalSep": ".", 
 	"thousandsSep": ",",
