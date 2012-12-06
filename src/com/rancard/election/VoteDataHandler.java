@@ -27,6 +27,7 @@ public class VoteDataHandler extends HttpServlet {
 
 	private static final String REGION = "REGION";
 	private static final String CONSTITUENCY = "CONSTITUENCY";
+	private static final String CONFIRMATION = "CONFIRMATION";
 	private Logger logger = Logger.getLogger(VoteDataHandler.class.toString());
 	private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
@@ -174,10 +175,8 @@ public class VoteDataHandler extends HttpServlet {
 			for(Entity regionEntity: regionEntities){
 				if(regionEntity.getProperty(CONSTITUENCY).toString().equalsIgnoreCase(constituency)){
 					json.append("\"" + regionEntity.getProperty("PARTY").toString()+"\":");
-					json.append(Integer.valueOf(regionEntity.getProperty("RESULT").toString())).append(",");
-					
-					json.append("\"" + regionEntity.getProperty("PARTY").toString()+"NAME\":");
-					json.append("\"" +regionEntity.getProperty("CANDIDATE").toString()).append("\",");
+					json.append("["+Integer.valueOf(regionEntity.getProperty("RESULT").toString()))
+						.append(",").append("\"" +regionEntity.getProperty("CANDIDATE").toString()+"\"]").append(",");
 					
 				}
 			}
@@ -296,13 +295,19 @@ public class VoteDataHandler extends HttpServlet {
 				Entity entity = new Entity(KeyFactory.createKey("presidential-constituency", constituencyKey));				
 				CustomElementCollection entryElements = entry.getCustomElements();
 				
+				
+				
 				for(int i = 0; i < sheetColumns.length; i++)
 				{
 					if(i <= 1){
 						entity.setProperty(	sheetColumns[i], entryElements.getValue(sheetColumns[i]).trim());
 					}
 					else{
-						entity.setProperty(sheetColumns[i],parseStringToInt(entryElements.getValue(sheetColumns[i].trim())));
+						if(entryElements.getValue(CONFIRMATION) == null || entryElements.getValue(CONFIRMATION).equals("")){
+							entity.setProperty(sheetColumns[i], 0);
+						}else{
+							entity.setProperty(sheetColumns[i],parseStringToInt(entryElements.getValue(sheetColumns[i].trim())));
+						}
 					}
 				}				
 
@@ -332,6 +337,7 @@ public class VoteDataHandler extends HttpServlet {
 				Entity entity = new Entity(KeyFactory.createKey("parliamentary-constituency", entryKey));
 				CustomElementCollection entryElements = entry.getCustomElements();
 			
+				
 				for(int i = 0; i < sheetColumns.length; i++){
 					
 					if(i <= 3){
@@ -347,7 +353,11 @@ public class VoteDataHandler extends HttpServlet {
 						}
 						entity.setProperty(	sheetColumns[i], entryElements.getValue(sheetColumns[i]).trim());
 					}else{
-						entity.setProperty("RESULT",parseStringToInt(entryElements.getValue(sheetColumns[i].trim())));
+						if(entryElements.getValue(CONFIRMATION) == null || entryElements.getValue(CONFIRMATION).equals("")){
+							entity.setProperty("RESULT", 0);
+						}else{
+							entity.setProperty("RESULT",parseStringToInt(entryElements.getValue(sheetColumns[i].trim())));
+						}
 					}
 				}
 				constituencyEntries.add(entity);
