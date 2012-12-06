@@ -3,7 +3,6 @@ package com.rancard.election;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,6 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.gdata.data.spreadsheet.CustomElementCollection;
 import com.google.gdata.data.spreadsheet.ListEntry;
-import com.google.gson.Gson;
 import com.rancard.election.common.SpreadsheetHandler;
 
 @SuppressWarnings("serial")
@@ -108,7 +106,7 @@ public class VoteDataHandler extends HttpServlet {
 		resp.getWriter().println(response);
 	}
 
-	@SuppressWarnings("unchecked")
+
 	private String convertEntitiesToJSON(Iterable<Entity> entities, String value, String region){
 		StringBuilder json = new StringBuilder();
 		if("presidential-overview".equals(value)) {			
@@ -131,7 +129,7 @@ public class VoteDataHandler extends HttpServlet {
 			json.deleteCharAt(json.length()-1);
 			json.append("}");
 		} else if ("presidential-constituency".equals(value)) {
-			json = convertEntitiesToJSONPresidentialRegional(entities, region);
+			json = convertEntitiesToJSONPresidential(entities, region);
 
 		} else if ("parliamentary-overview".equals(value)) {
 			json.append("{");
@@ -153,70 +151,119 @@ public class VoteDataHandler extends HttpServlet {
 			json.deleteCharAt(json.length()-1);
 			json.append("}");
 		} else if ("parliamentary-constituency".equals(value)) {
-
+			json =convertEntitiesToJSONPaliamentary(entities, region);
 		}
 
 		return json.toString();
 	}
 	
-	private StringBuilder convertEntitiesToJSONPaliamentaryRegional(Iterable<Entity> entities, String regionValue){
+	private StringBuilder convertEntitiesToJSONPaliamentaryRegional(Iterable<Entity> entities, String region){
+		
 		StringBuilder json = new StringBuilder();
+		List<Entity> regionEntities = new ArrayList<Entity>();
+		for(Entity entity: entities){
+			if(entity.getProperty(REGION).toString().equalsIgnoreCase(region)){
+				regionEntities.add(entity);
+			}
+		}
+		logger.log(Level.WARNING, " count = "+regionEntities.size());
+		
+		json.append("{");
+		for(String constituency: getUniqueColumn(regionEntities, CONSTITUENCY)){
+			json.append("\"" + constituency+"\":{");
+			for(Entity regionEntity: regionEntities){
+				if(regionEntity.getProperty(CONSTITUENCY).toString().equalsIgnoreCase(constituency)){
+					json.append("\"" + regionEntity.getProperty("PARTY").toString()+"\":");
+					json.append(Integer.valueOf(regionEntity.getProperty("RESULT").toString())).append(",");
+					
+					json.append("\"" + regionEntity.getProperty("PARTY").toString()+"NAME\":");
+					json.append("\"" +regionEntity.getProperty("CANDIDATE").toString()).append("\",");
+					
+				}
+			}
+			json.deleteCharAt(json.length()-1);
+			json.append("},");
+		}
+		json.deleteCharAt(json.length()-1);
+		json.append("}");
 		return json;
 	}
 	
+	private StringBuilder convertEntitiesToJSONPaliamentary(Iterable<Entity> entities, String regionValue){
+		StringBuilder json = new StringBuilder();
+		
+		if(regionValue == null|| regionValue.equals("")){
+			json.append("{");
+			for (String region: getUniqueColumn(entities, REGION)){	
+				json.append("\"" +region+ "\":");
+				
+				json.append(convertEntitiesToJSONPaliamentaryRegional(entities, region).toString());
+				json.append(",");	
+			}
+			json.deleteCharAt(json.length()-1);
+			json.append("}");
+			
+		}else{
+			json =convertEntitiesToJSONPaliamentaryRegional(entities, regionValue);
+		}
+		
+		return json;
+	}
 	
-	private StringBuilder convertEntitiesToJSONPresidentialRegional(Iterable<Entity> entities, String regionValue){
+
+	private List<String> getUniqueColumn(Iterable<Entity> entities, String column){
+		logger.log(Level.WARNING, " count = "+column);
+		List<String>  entries = new ArrayList<String>();
+		for(Entity entity: entities){
+			if(!entries.contains(entity.getProperty(column).toString().trim())){
+				entries.add(entity.getProperty(column).toString().trim());
+			}
+		}
+		logger.log(Level.WARNING, " count = "+column);
+		return entries;
+	}
+	
+	private StringBuilder convertEntitiesToJSONPresidentialRegional(Iterable<Entity> entities, String region){
+		StringBuilder json = new StringBuilder();
+		json.append("{");
+		for (Entity e: entities){
+			if(e.getProperty(REGION).toString().equalsIgnoreCase(region)){
+				Map<String,Object> map = e.getProperties();
+				json.append("\"" + map.get(CONSTITUENCY) + "\":{");
+				//map.remove(REGION);
+				for(String key: map.keySet()) {
+					if(key.equals(REGION) || key.equals(CONSTITUENCY)){
+						continue;
+					}
+					json.append("\"" + key + "\":");
+					json.append(Integer.valueOf(map.get(key).toString())).append(",");										
+				}
+				json.deleteCharAt(json.length()-1);
+				json.append("},");					
+			}								
+		}
+		json.deleteCharAt(json.length()-1);
+		json.append("}");
+		return json;
+	}
+	
+	private StringBuilder convertEntitiesToJSONPresidential(Iterable<Entity> entities, String regionValue){
 		logger.log(Level.WARNING, "Parameters: region = "+regionValue);
 		StringBuilder json = new StringBuilder();
 		
 		if(regionValue == null|| regionValue.equals("")){
-			Map<String,Object> table = new HashMap<String,Object>();
-			Map<String,Object> region;
-			Map<String,Object> constituency;
 			json.append("{");
-			for (Entity e: entities) {		
-				Map<String,Object> map = e.getProperties();
-			// get region
-				region = (Map<String,Object>)table.get(map.get(REGION).toString());
-				if (region == null) {
-					region = new HashMap<String,Object>();
-					table.put(map.get(REGION).toString(), region);
-				}
-				// get constituency
-				constituency = (Map<String,Object>)region.get(map.get(CONSTITUENCY).toString());
-				if (constituency == null) {
-					constituency = new HashMap<String,Object>();
-					region.put(map.get(CONSTITUENCY).toString(), constituency);
-				}
-			
-			// store party results
-				for (String party: map.keySet()) {
-					if(party.equals(REGION)||party.equals(CONSTITUENCY)){
-						continue;
-					}
-					constituency.put(party, Integer.valueOf(map.get(party).toString()));
-				}
-			}
-		}else{
-			json.append("{");
-			for (Entity e: entities){
-				if(e.getProperty(REGION).toString().equalsIgnoreCase(regionValue)){
-					Map<String,Object> map = e.getProperties();
-					json.append("\"" + map.get(CONSTITUENCY) + "\":{");
-					//map.remove(REGION);
-					for(String key: map.keySet()) {
-						if(key.equals(REGION) || key.equals(CONSTITUENCY)){
-							continue;
-						}
-						json.append("\"" + key + "\":");
-						json.append(Integer.valueOf(map.get(key).toString())).append(",");										
-					}
-					json.deleteCharAt(json.length()-1);
-					json.append("},");					
-				}								
+			for (String region: getUniqueColumn(entities, REGION)){	
+				json.append("\"" +region+ "\":");
+				
+				json.append(convertEntitiesToJSONPresidentialRegional(entities, region).toString());
+				json.append(",");	
 			}
 			json.deleteCharAt(json.length()-1);
 			json.append("}");
+			
+		}else{
+			json =convertEntitiesToJSONPresidentialRegional(entities, regionValue);
 		}
 		
 		return json;
