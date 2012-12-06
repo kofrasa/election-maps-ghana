@@ -172,6 +172,20 @@ document.write(
 		'body.ie7 #gop-logo, body.ie7 #ap-logo { right:4px; }',
 		'body.ie7 #google-logo, body.ie7 #linkToMap { display:none; }',
 		'#testlabel { position:absolute; left: ', sidebarWidth + 32, 'px; top: 2px; font-size: 24px; font-weight:bold; color:red; text-shadow: 0 0 4px white, 0 0 8px white, 0 0 12px white, 0 0 12px white; }',
+		 // custom layouts
+		'#subregion_div { width:815px; font-family:Helvetica; font-size:14px; display: none;',
+		'position:absolute; background:#fff; z-index:1001; }',
+		'#subregion_title { padding: 10px; padding-left:15px; }',
+		'#subregion_title a { text-decoration:none; color:#111;}',
+		'#subregion_title a:hover { text-decoration:underline; }',
+		'#subregion ul { list-style: none; float: left; padding:0px 15px;',
+			'border-right: solid #eeeeee thin; width:240px;}',
+		'#subregion li { list-style: none; word-wrap:break-word; color: #08C; padding:5px 5px;}',
+		'#subregion li:hover { background-color:#eee; cursor: pointer;}',
+		'#subregion li.selected-region:hover,',
+		'#subregion li.selected-region { background-color:#08C; font-weight:bold; color:#fff; cursor: auto;}',
+		'#lightbox { display: none; position:absolute; left:0; top:0; z-index: 1000;',
+		'min-width:100%; min-height: 100%; background-color: #000;opacity: 0.8;filter:alpha(opacity=90);}',
 	'</style>'
 );
 
@@ -192,27 +206,112 @@ document.write(
 	'</div>'
 );
 
-function renderConstituencyStyles() {
-	var styles = S(
-		'<style>',
-			'#subregion_div { width:815px; font-family:Helvetica; font-size:14px; display: none;',
-			'position:absolute; background:#fff; z-index:1001; }',
-			'#subregion_title { padding: 10px; padding-left:15px; }',
-			'#subregion_title a { text-decoration:none; color:#111;}',
-			'#subregion_title a:hover { text-decoration:underline; }',
-			'#subregion ul { list-style: none; float: left; padding:0px 15px;',
-				'border-right: solid #eeeeee thin; width:240px;}',
-			'#subregion li { list-style: none; word-wrap:break-word; color: #08C; padding:5px 5px;}',
-			'#subregion li:hover { background-color:#eee; cursor: pointer;}',
-			'#subregion li.selected-region:hover,',
-			'#subregion li.selected-region { background-color:#08C; font-weight:bold; color:#fff; cursor: auto;}',
-			'#lightbox { display: none; position:absolute; left:0; top:0; z-index: 1000;',
-			'min-width:100%; min-height: 100%; background-color: #000;opacity: 0.8;filter:alpha(opacity=90);}',
-		'</style>'
+function renderConstituencies(region, results) {	
+	
+	var names = [
+         'Odododio','Amankese','Fanteakwa','Bawku South','Efutu',
+         'Mustapha', 'Some Long Constituency', 'KOUIEJRH', 'IONE WNWIENCO WEICOW ECINO',
+         'QIE OEINEO IEMOI EMO', 'OPOPOPEEKPOPK', 'UWOJEEE','UIWLWM NOICQI EERR',
+         'POEW ENWEEREJW', 'QINEWOEINWF B IAYBVERU', 'UEIQWEU DSDPPREO', 'IUEWCNJOIDV BYBUERR',
+         'OIWEPW WEO JSIORNVERIV', 'UBCIEWUHN DJVJSDVEDRVJ','BEWUGHEYWEYTRJ  DUIR',
+         'PIEWKENVR RERE ERER'
+	];
+	// TODO: extract constituency names
+	names.sort(function(a, b){
+	    /* 
+	       We avoid reuse of arguments variables in a sort
+	       comparison function because of a bug in IE <= 8.
+	       See http://www.zachleat.com/web/array-sort/
+	    */
+	    var va = (a === null) ? "" : "" + a;
+	    var vb = (b === null) ? "" : "" + b;
+	    return va > vb ? 1 : ( va === vb ? 0 : -1 );
+	});
+
+	var contentString = S(
+		'<div id="lightbox"></div>',
+		'<div id="subregion_div" style="outline:thin black solid">',
+			'<div id="subregion_title">',
+				'<div style="display:inline-block;font-weight:bold">',
+					'Constituencies for ',region.toUpperCase(), ' REGION',
+				'</div>',
+				'<div style="float:right; padding-right:20px;">',
+					'<a href="#">Click to Close</a>',
+				'</div>',
+			'</div>',
+			'<div id="subregion">'
 	);
-	document.write(styles);
+
+	// render lists
+	for (var i=0; i < names.length; i++) {
+		if ((i % 12) === 0) {	
+			if (i !== 0) {
+				contentString = S(contentString, '</ul>');
+			}
+			contentString = S(contentString,'<ul class="sublist">');
+		}
+		contentString = S(contentString, '<li>',names[i],'</li>');
+	}
+	contentString = S(contentString, '</ul></div>');
+	$body.append(contentString);	
+	initConstituencyEvents(results);
 }
-renderConstituencyStyles();
+
+//clear border of last list
+function initConstituencyEvents(results) {
+	
+	$('#subregion ul:last').css('border','none');
+	$("#subregion li").click(function () {
+		var $currentItem  = $(this);				
+		var $sidebar = $('<ul></ul>');
+		var items = $("#subregion li");	
+
+		$.each(items, function (key,value) {
+			$(value).off('click').on('click', function () {			
+				$("#subregion li").removeClass('selected-region');
+				$(value).addClass('selected-region');
+			});
+			$sidebar.append(value);
+		});
+
+		$('ul.sublist').remove();
+		$sidebar.css({'height': '400px','width':'250px', 'overflow': 'auto',
+			'border':'thin outset #ccc', 'margin-left':'10px'});
+		$('#subregion').html($sidebar).append('<div style="clear:both"></div>');
+
+		// select and scroll to item
+		$currentItem.trigger('click');	
+		var padding = 200; // total padding
+		$sidebar.animate({scrollTop: $currentItem.offset().top-padding},'slow');
+	});	
+
+	// setup light box
+	$('#lightbox, #subregion_title a').click( function() {
+		$("#lightbox, #subregion_div").fadeOut(300, function () {		
+			$("#subregion li").unbind();
+			$('#lightbox, #subregion_title a, #subregion_div').unbind().remove();
+		});
+	});
+
+	// load and show
+	var $subregion_div = $('#subregion_div');
+	var top = ($(window).height() - $subregion_div.height()) / 3;
+	var left = ($(window).width() - $subregion_div.width()) / 2;
+	top = top + "px";
+	left = left + "px";
+	$subregion_div.css({'top':top, 'left':left});
+	$("#subregion_div, #lightbox").fadeIn(300);
+}
+
+
+function formatCandidatesConstituency(feature) {
+	// TODO: perform calculations and get results in correct format
+	
+	var resultJson;
+	// aggregate results for each constituency	
+	renderConstituencies(feature.geojsonProperties.ID, resultJson);
+}
+
 
 var presidentialResult = {
 	"GREATER ACCRA":{"NDC":8,"CPP":1,"GCPP":0,"UFP":10,"PNC":0,"PPP":0,"NPP":7,"INDP":1},
@@ -426,13 +525,6 @@ function formatCandidatesTotal(resultsJson) {
 	contentString = S(contentString, '</tbody></table></div>');
 	return contentString;
 }
-
-
-function formatCandidatesConstituency(resultsJson) {
-	// aggregate results for each constituency
-	
-}
-
 
 $('#outer').html( contentTable() );
 
@@ -684,8 +776,8 @@ function showTip() {
 function loadFeature( feature, color ) {
 
 	// on click			
-	google.maps.event.addListener(feature, 'click', function (e) {
-
+	google.maps.event.addListener(feature, 'click', function (e) {		
+		formatCandidatesConstituency(this);
  	});
 	
 	// on mouseover
