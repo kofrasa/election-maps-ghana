@@ -192,6 +192,28 @@ document.write(
 	'</div>'
 );
 
+function renderConstituencyStyles() {
+	var styles = S(
+		'<style>'
+			'#subregion_div { width:815px; font-family:Helvetica; font-size:14px; display: none;',
+			'position:absolute; background:#fff; z-index:1001; }',
+			'#subregion_title { padding: 10px; padding-left:15px; }',
+			'#subregion_title a { text-decoration:none; color:#111;}',
+			'#subregion_title a:hover { text-decoration:underline; }',
+			'#subregion ul { list-style: none; float: left; padding:0px 15px;',
+				'border-right: solid #eeeeee thin; width:240px;}',
+			'#subregion li { list-style: none; word-wrap:break-word; color: #08C; padding:5px 5px;}',
+			'#subregion li:hover { background-color:#eee; cursor: pointer;}',
+			'#subregion li.selected-region:hover,',
+			'#subregion li.selected-region { background-color:#08C; font-weight:bold; color:#fff; cursor: auto;}',
+			'#lightbox { display: none; position:absolute; left:0; top:0; z-index: 1000;',
+			'min-width:100%; min-height: 100%; background-color: #000;opacity: 0.8;filter:alpha(opacity=90);}',
+		'</style>'
+	);
+	document.write(styles);
+}
+renderConstituencyStyles();
+
 var presidentialResult = {
 	"GREATER ACCRA":{"NDC":8,"CPP":1,"GCPP":0,"UFP":10,"PNC":0,"PPP":0,"NPP":7,"INDP":1},
 	"NORTHERN REGION":{"NDC":2,"CPP":2,"GCPP":1,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":12},
@@ -225,10 +247,10 @@ function loadResult(){
 	var value;
 	if(params.contest === 'president'){
 		value = 'presidential-overview';
-		//results = presidentialResult;
+		results = presidentialResult;
 	}else{
 		value = 'paliamentary-overview';
-		//results = paliamentaryResult;
+		results = paliamentaryResult;
 	}
 	
 	$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get&value="+value, function(data){
@@ -663,7 +685,7 @@ function loadFeature( feature, color ) {
 
 	// on click			
 	google.maps.event.addListener(feature, 'click', function (e) {
-		alert("TODO: Must show results summary for region - " + getAbbr(this));
+
  	});
 	
 	// on mouseover
