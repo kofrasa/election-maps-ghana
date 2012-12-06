@@ -225,10 +225,10 @@ function loadResult(){
 	var value;
 	if(params.contest === 'president'){
 		value = 'presidential-overview';
-		//results = presidentialResult;
+		results = presidentialResult;
 	}else{
-		value = 'paliamentary-overview';
-		//results = paliamentaryResult;
+		value = 'parliamentary-overview';
+		results = paliamentaryResult;
 	}
 	
 	$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get&value="+value, function(data){
@@ -255,7 +255,7 @@ function contentTable() {
 		'<div>',
 			'<div id="selectors">',
 				'<div style="margin:0; padding:4px;">',
-					_.map( [ 'president', 'paliamentary' ], button )
+					_.map( [ 'president', 'parliamentary' ], button )
 						.join(''),
 				'</div>',
 				
