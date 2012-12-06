@@ -3,13 +3,10 @@ var times = {
 	offset: 0
 };
 
+var DEBUG = true;
+
 params.year = params.year || '2012';
 params.contest = params.contest || 'president';
-
-var $body = $('body');
-
-var $window = $(window), ww = $window.width(), wh = $window.height();
-var mapPixBounds;
 
 function cacheUrl( url ) {
 	return opt.nocache ? S( url, '?q=', times.gadgetLoaded ) : url;
@@ -25,7 +22,9 @@ document.write(
 	'</style>'
 );
 
+var $body = $('body');
 var $window = $(window), ww = $window.width(), wh = $window.height();
+var mapPixBounds;
 var sidebarWidth = 340;
 opt.fontsize = '15px';
 
@@ -134,8 +133,7 @@ document.write(
 		'body.web div.legend-candidate { color:#333; }',
 		'body.tv div.legend-candidate, body.tv div.legend-filler { font-size:21px; font-weight:bold; }',
 		'td.legend-filler { border-color:transparent; }',
-		//'tr.legend-candidate td { width:20%; }',
-		'tr.candidate-row:hover { background-color: #eeeeee; }',
+		//'tr.legend-candidate td { width:20%; }',	
 		'tr.legend-candidate td { cursor:pointer; }',
 		'tr.legend-candidate.hover td, tr.legend-candidate:hover td { background-color:#F6F6F6; border: 1px solid #F6F6F6; border-top:1px solid #D9D9D9; border-bottom: 1px solid #D9D9D9; -webkit-transition: all 0.218s; -moz-transition: all 0.218s; transition: all 0.218s; }',
 		'tr.legend-candidate.hover td.left, tr.legend-candidate:hover td.left { border-left: 1px solid #D9D9D9; -webkit-transition: all 0.218s; -moz-transition: all 0.218s; transition: all 0.218s; }',
@@ -173,6 +171,7 @@ document.write(
 		'body.ie7 #google-logo, body.ie7 #linkToMap { display:none; }',
 		'#testlabel { position:absolute; left: ', sidebarWidth + 32, 'px; top: 2px; font-size: 24px; font-weight:bold; color:red; text-shadow: 0 0 4px white, 0 0 8px white, 0 0 12px white, 0 0 12px white; }',
 		 // custom layouts
+		'tr.candidate-row:hover { background-color: #eeeeee; }',
 		'#subregion_div { width:815px; font-family:Helvetica; font-size:14px; display: none;',
 		'position:absolute; background:#fff; z-index:1001; }',
 		'#subregion_title { padding: 10px; padding-left:15px; }',
@@ -208,15 +207,11 @@ document.write(
 
 function renderConstituencies(region, results) {	
 	
-	var names = [
-         'Odododio','Amankese','Fanteakwa','Bawku South','Efutu',
-         'Mustapha', 'Some Long Constituency', 'KOUIEJRH', 'IONE WNWIENCO WEICOW ECINO',
-         'QIE OEINEO IEMOI EMO', 'OPOPOPEEKPOPK', 'UWOJEEE','UIWLWM NOICQI EERR',
-         'POEW ENWEEREJW', 'QINEWOEINWF B IAYBVERU', 'UEIQWEU DSDPPREO', 'IUEWCNJOIDV BYBUERR',
-         'OIWEPW WEO JSIORNVERIV', 'UBCIEWUHN DJVJSDVEDRVJ','BEWUGHEYWEYTRJ  DUIR',
-         'PIEWKENVR RERE ERER'
-	];
-	// TODO: extract constituency names
+	var names = [];
+	for (var k in results) {
+		names.push(k);
+	}
+	
 	names.sort(function(a, b){
 	    /* 
 	       We avoid reuse of arguments variables in a sort
@@ -232,7 +227,7 @@ function renderConstituencies(region, results) {
 		'<div id="lightbox"></div>',
 		'<div id="subregion_div" style="outline:thin black solid">',
 			'<div id="subregion_title">',
-				'<div style="display:inline-block;font-weight:bold">',
+				'<div style="display:inline-block;font-weight:bold;border-bottom:solid thin #ccc;">',
 					'Constituencies for ',region.toUpperCase(), ' REGION',
 				'</div>',
 				'<div style="float:right; padding-right:20px;">',
@@ -242,7 +237,7 @@ function renderConstituencies(region, results) {
 			'<div id="subregion">'
 	);
 
-	// render lists
+	// generate list of constituencies
 	for (var i=0; i < names.length; i++) {
 		if ((i % 12) === 0) {	
 			if (i !== 0) {
@@ -253,36 +248,52 @@ function renderConstituencies(region, results) {
 		contentString = S(contentString, '<li>',names[i],'</li>');
 	}
 	contentString = S(contentString, '</ul></div>');
-	$body.append(contentString);	
-	initConstituencyEvents(results);
+	$body.append( contentString );	
+	initConstituencyEvents( results );
 }
 
 //clear border of last list
-function initConstituencyEvents(results) {
+function initConstituencyEvents( results ) {
 	
 	$('#subregion ul:last').css('border','none');
-	$("#subregion li").click(function () {
+	$("#subregion li").on('click', function () {
 		var $currentItem  = $(this);				
 		var $sidebar = $('<ul></ul>');
 		var items = $("#subregion li");	
 
 		$.each(items, function (key,value) {
-			$(value).off('click').on('click', function () {			
+			$(value).off('click').on('click', function () {		
 				$("#subregion li").removeClass('selected-region');
-				$(value).addClass('selected-region');
+				$(value).addClass('selected-region');								
+				var $result_div = $('#constituency_result_div').empty();
+				var candidates = getTopCandidates(convertToCandidates(results[$(this).text()]), 'votes', 24);
+				$result_div.hide();
+				$result_div.html(createInfoContent($(this).text(), candidates));
+				$result_div.find('.click-for-local').remove();	
+				$result_div.find('.tiptitletext').text($(this).text());
+				$result_div.find('table').css('width','100%');
+				$result_div.css({
+					'width': '400px',
+					'margin-left': '40px',
+					'margin-top': '10px',
+					'font-size': '14px'
+				});
+				$result_div.show();
 			});
 			$sidebar.append(value);
 		});
 
 		$('ul.sublist').remove();
 		$sidebar.css({'height': '400px','width':'250px', 'overflow': 'auto',
-			'border':'thin outset #ccc', 'margin-left':'10px'});
-		$('#subregion').html($sidebar).append('<div style="clear:both"></div>');
-
-		// select and scroll to item
-		$currentItem.trigger('click');	
+			'border':'thin outset #ccc', 'margin-left':'10px','float':'left'});		
+		
+		$('#subregion').html($sidebar)
+			.append('<div id="constituency_result_div" style="float:left"></div>')
+			.append('<div style="clear:both"></div>');
+		
 		var padding = 200; // total padding
 		$sidebar.animate({scrollTop: $currentItem.offset().top-padding},'slow');
+		$currentItem.trigger('click');
 	});	
 
 	// setup light box
@@ -304,24 +315,25 @@ function initConstituencyEvents(results) {
 }
 
 
-function formatCandidatesConstituency(feature) {
+function formatCandidatesConstituency() {
 	// TODO: perform calculations and get results in correct format
-	
-	var resultJson;
-	// aggregate results for each constituency	
-	renderConstituencies(feature.geojsonProperties.ID, resultJson);
+	var region = currentFeature.geojsonProperties.ID.toLowerCase();
+	loadResult('constituency', region, function (result) {				
+		// aggregate results for each constituency	
+		renderConstituencies(region, result);
+	});	
 }
 
 
 var presidentialResult = {
 	"GREATER ACCRA":{"NDC":8,"CPP":1,"GCPP":0,"UFP":10,"PNC":0,"PPP":0,"NPP":7,"INDP":1},
-	"NORTHERN REGION":{"NDC":2,"CPP":2,"GCPP":1,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":12},
-	"ASHANTI REGION":{"NDC":12,"CPP":3,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},
-	"BRONG AHAFO REGION":{"NDC":34,"CPP":4,"GCPP":67,"UFP":23,"PNC":77,"PPP":67,"NPP":0,"INDP":0},
-	"CENTRAL REGION":{"NDC":9,"CPP":5,"GCPP":6,"UFP":2,"PNC":9,"PPP":5,"NPP":8,"INDP":6},
-	"EASTERN REGION":{"NDC":4,"CPP":6,"GCPP":1,"UFP":4,"PNC":3,"PPP":6,"NPP":4,"INDP":8},
-	"VOLTA REGION":{"NDC":13,"CPP":7,"GCPP":32,"UFP":52,"PNC":5,"PPP":33,"NPP":55,"INDP":19},
-	"WESTERN REGION":{"NDC":5,"CPP":8,"GCPP":7,"UFP":4,"PNC":2,"PPP":5,"NPP":2,"INDP":5},
+	"NORTHERN":{"NDC":2,"CPP":2,"GCPP":1,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":12},
+	"ASHANTI":{"NDC":12,"CPP":3,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},
+	"BRONG AHAFO":{"NDC":34,"CPP":4,"GCPP":67,"UFP":23,"PNC":77,"PPP":67,"NPP":0,"INDP":0},
+	"CENTRAL":{"NDC":9,"CPP":5,"GCPP":6,"UFP":2,"PNC":9,"PPP":5,"NPP":8,"INDP":6},
+	"EASTERN":{"NDC":4,"CPP":6,"GCPP":1,"UFP":4,"PNC":3,"PPP":6,"NPP":4,"INDP":8},
+	"VOLTA":{"NDC":13,"CPP":7,"GCPP":32,"UFP":52,"PNC":5,"PPP":33,"NPP":55,"INDP":19},
+	"WESTERN":{"NDC":5,"CPP":8,"GCPP":7,"UFP":4,"PNC":2,"PPP":5,"NPP":2,"INDP":5},
 	"UPPER EAST":{"NDC":7,"CPP":9,"GCPP":6,"UFP":7,"PNC":3,"PPP":4,"NPP":3,"INDP":8},
 	"UPPER WEST":{"NDC":2,"CPP":10,"GCPP":3,"UFP":7,"PNC":8,"PPP":4,"NPP":9,"INDP":6}
 };
@@ -338,25 +350,74 @@ var paliamentaryResult = {
 	"EASTERN":{"CPP":0,"IPP":0,"GCPP":0,"NDP":0,"PPP":0,"NPP":0,"INDP":0,"NDC":0,"GFP":0,"DPP":0,"PNC":0,"NVP":0}
 };
 
-presidentialConstituency = {
+var presidentialConstituency = {"KETA":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ANLO":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"KETU SOUTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"KETU NORTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AKATSI  SOUTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AKATSI  NORTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"SOUTH TONGU":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"CENTRAL TONGU":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"NORTH TONGU":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ADAKLU":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AGOTIME -ZIOPE":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"HO CENTRAL":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"HO WEST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"SOUTH DAYI":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"NORTH DAYI":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"KPANDO":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"HOHOE":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AFADJATO SOUTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BUEM":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BIAKOYE":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AKAN":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"KRACHI EAST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"KRACHI WEST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"KRACHI  NCHUMURU":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"NKWANTA SOUTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"NKWANTA NORTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0}}
+var parliamentaryConstituency = {"ABETIFI":{"NDC":[0,"SAMUEL ASAMOAH"],"NPP":[0,"PETER WIAFE PEPERA"]},"ABIREM":{"NDC":[0,"MAVIS AMA FRIMPONG"],"NPP":[0,"ESTHER OBENG DAPAAH"],"PPP":[0,"AGYEMANG E PREMPEH"]},"ABUAKWA NORTH":{"NDC":[0,"VICTOR EMMANUEL SMITH"],"NPP":[0,"JOSPEH BOAKYE DANQUAH ADU"]},"ABUAKWA SOUTH":{"NDC":[0,"SANUSI MOHAMMED"],"NPP":[0,"SAMUEL ATTA AKYEA"],"INDP":[0,"NAN ADDO AIKINS"]},"ACHIASE":{"NDC":[0,"DR. KWASI AKYEM APEA-KUBI"],"NPP":[0,"ROBERT KWASI AMOAH"],"NDP":[0,"CHARLES KWABENA KURANKYE"]},"AFRAM PLAINS NORTH":{"NDC":[0,"EMMANUEL BOAKYE DIDIEYE"],"NPP":[0,"JEFFREY KONADU ADDO"],"PPP":[0,"KWAO LAWER ABRAHAM"]},"AFRAM PLAINS SOUTH":{"NDC":[0,"JOSEPH APPIAH BOATENG"],"NPP":[0,"ADONGO ANTHONY"],"CPP":[0,"DARFOUR JANET"],"INDP":[0,"AHALIGAH RAPHAEL KOFI"]},"AKIM ODA":{"NDC":[0,"KWABENA NKANSAH ASARE"],"NPP":[0,"WILLIAM AGYAPONG QUAITTOO"],"PPP":[0,"KOFI ASAMOAH -SIAW"],"NDP":[0,"ANINAKWAH JOSHUA KWABENA"],"INDP":[0,"AUGUSTUS ENNIN ATTAFUAH"],"INDP":[0,"BAA ABORA"],"INDP":[0,"KOFI ASARE"]},"AKIM SWEDRU":{"NDC":[0,"ROBERT SAMUEL ANSAH"],"NPP":[0,"KENNEDY OSEI NYARKO"],"PPP":[0,"AKWASI AMANKWAH MARFO"],"NDP":[0,"GODWIN BOADI"],"INDP":[0,"JOSEPH AMPOMAH BOSOMPEM"]},"AKUAPEM SOUTH":{"NDC":[0,"WILLIAM NTOW BOAHENE"],"NPP":[0,"OSEI BONSU AMOAH"],"PPP":[0,"MICHEAL ASANTE"],"CPP":[0,"ISAAC OPARE ADDO"]},"AKWAPIM NORTH":{"NDC":[0,"MRS MARGARET ANSAH"],"NPP":[0,"WILLIAM OFORI BOAFO"],"PPP":[0,"KWAKU FREDUA- AGYEMAN"],"CPP":[0,"JOSEPH AKORKOR KWASI SAKYIMANTE"],"PNC":[0,"BEATRICE ADDO"],"NDP":[0,"ALHAJI MOHAMMED MUFTAO SEIDU"],"INDP":[0,"EDWARD YEHONU AKAKPO"]},"AKWATIA":{"NDC":[0,"EBABA JAMAL AHMED"],"NPP":[0,"DR. KOFI ASARE"],"PPP":[0,"FELIX SETH LARBI"]},"ASENE/ AKROSO/ MANSO":{"NDC":[0,"RICHARD ROLAND ACQUAH"],"NPP":[0,"YAW OWUSU BOATENG"],"PPP":[0,"NYARKO OFORI DANIEL"],"NDP":[0,"SINTIM KWADWO TANOH"]},"ASUOGYAMAN":{"NDC":[0,"ASARE AKOTO JOSES"],"NPP":[0,"KOFI OSEI-AMEYAW"],"PPP":[0,"REV SOLOMON OBUOBI"],"PNC":[0,"SLANZY ATSU WORNAH"],"CPP":[0,"MENSAH ALBERT CORBLA"],"NDP":[0,"DWAMENA BEKOE"]},"ATIWA EAST":{"NDC":[0,"ASANTE FOSTER"],"NPP":[0,"ABENA OSEI ASARE"],"PPP":[0,"BOATENG OKYERE"],"NVP":[0,"GEORGE PADMORE APRAKU"]},"ATIWA WEST":{"NDC":[0,"EMMANUEL ATTA TWUM"],"NPP":[0,"KWASI AMOAKO ATTAH"]},"AYENSUANO":{"NDC":[0,"MICHAEL S.D KODUA"],"NPP":[0,"AYEH PAYE SAMUEL"],"PPP":[0,"PRINCE TK MENYEH"]},"FANTEAKWA NORTH":{"NDC":[0,"ABASS FUSEINI SBAABE"],"NPP":[0,"KWABENA AMANKWA ASIAMAH"],"PPP":[0,"NKANSAH AMOS"],"NDP":[0,"ODAME KWAME DARKWA"]},"FANTEAKWA SOUTH":{"NDC":[0,"DR KOFI AGYARKO- DANQUAH"],"NPP":[0,"KOFI OKYERE-AGYEKUM"],"PPP":[0,"GODFRED MARK DANKWAH NYARKO"],"NDP":[0,"CHAM GABRIEL"]},"KADE":{"NDC":[0,"GEORGE AGYEMANG DUAH"],"NPP":[0,"OFOSU ASAMOAH"],"PPP":[0,"TURKSON EBENEZER"],"INDP":[0,"ERIC NTIRI MENSAH"]},"LOWER MANYA KROBO":{"NDC":[0,"EBENEZER OKLETEY"],"GCPP":[0,"ATTER JOSEPH KORLEY"],"NPP":[0,"DEDO AGYARKO KUSI"],"PPP":[0,"JOASHUA TETTEH NARH"],"PNC":[0,"PETER TEYE BATSA"],"CPP":[0,"FOSTER OKLEY"],"INDP":[0,"MICHEAL TEYE NYAUNU"]},"MPRAESO":{"NDC":[0,"JOSEPH OMARI"],"NPP":[0,"SETH KWAME ACHEAMPONG"],"PPP":[0,"BOATENG KENNETH AMPADU"],"PNC":[0,"KWAKU ASANTE"],"CPP":[0,"SEMEFAH MAWUTOR"],"NDP":[0,"ALBERT BAMFO"]},"NEW JAUBEN SOUTH":{"NDC":[0,"DR. KWAKU OWUSU- ACHEAPONG"],"NPP":[0,"DR. MARK ASSIBEY-YEBOAH"],"PPP":[0,"DR. ENOCK ANSAH"],"PNC":[0,"NANA OBOADIE BOATENG BONSU"],"CPP":[0,"COLLINS AGYEI OTENG"],"IPP":[0,"HEFASOULNIA AKYEA MENSAH BROWN"]},"OFOASE/ AYIREBI":{"NDC":[0,"TOM KENNETH BUDU"],"NPP":[0,"DAVID OPPONG KUSI"],"PPP":[0,"DENNIS TERCHI- DUKU"],"CPP":[0,"RAYNOLDS Y. AMOAKO"],"INDP":[0,"APPIAH JERRY ASIEDU"]},"UPPER MANYA KROBO":{"NDC":[0,"JEFF KAVIANU"],"NPP":[0,"MOSES TETTEH BERIMAH"],"PPP":[0,"FRED TEYE TETTEH"],"PNC":[0,"GIDEON KPABITEY"],"CPP":[0,"RUDOLF NARH YOHUNO"],"GFP":[0,"AYER THEOPHILUS"],"NDP":[0,"NICHOLAS TETTEH"],"INDP":[0,"DJEMBI JOHN"]},"LOWER WEST AKIM":{"NDC":[0,"MARTIN BRUCE OPARE"],"NPP":[0,"KLENAM GIFTY"],"PPP":[0,"ANDREWS OFORI DARKO"],"PNC":[0,"ABDUL KARIM YAHUZA MOHAMMED AWAL"],"CPP":[0,"MUHAMMED OSMAN"],"DPP":[0,"NYEDUA KOFI EVANS"],"INDP":[0,"DJENON STEPHEN JAMES"]},"NEW JUABENG NORTH":{"NDC":[0,"ISAAC LIVINGSTONE ASAMOAH"],"NPP":[0,"KWASI BOATENG ADJEI"],"PPP":[0,"AMAKYE KWAME ELVIS"],"CPP":[0,"FRANK ODURO"],"NDP":[0,"ISAAC OTCHERE AMPOFO"],"INDP":[0,"GABRIEL NORGAH"],"INDP":[0,"ADUTWUM-ADDO AUGUSTINE SEXTUS"]},"NKAWKAW":{"NDC":[0,"ALEX SOMUAH OBENG"],"NPP":[0,"ERIC KWAKYE DARFOUR"],"PPP":[0,"ADDO OLIVIA"]},"NSAWAM/ ADOAGYIRI":{"NDC":[0,"BEN OHENE AYEH"],"NPP":[0,"FRANK ANNOH DOMPREH"],"PPP":[0,"NICK EMMANUEL AFARI- ARTHUR"],"PNC":[0,"BARAHAMA IMURANA AHMED"],"CPP":[0,"ESSUMAN NANA AKOM KOFI COLLINS"]},"OKERE":{"NDC":[0,"GEORGE OPARE ADDO"],"NPP":[0,"DANIEL BOTWE"],"PPP":[0,"ASANTE SOLOMON ROGER"],"CPP":[0,"KWABENA OWUSU-DARKO"],"NDP":[0,"BERNICE AMOAH ODOI"],"INDP":[0,"VITAARSHIE YAW"]},"SUHUM":{"NDC":[0,"JULIUS DEBRAH"],"NPP":[0,"FREDERICK OPARE -ANSAH"],"PNC":[0,"JACOB KWAKU ARKOH"],"NDP":[0,"DALE NETTEY- MARBELL"],"INDP":[0,"MATILDA DOCCUVI"]}};
+
+var resultCache = {};
+var baseUrl = 'http://election-map-gh.appspot.com/vote-data?';
+
+function loadResult( scope, region, callback ) {
 	
-};
-var results;
-function loadResult(){
 	var value;
-	if(params.contest === 'president'){
-		value = 'presidential-overview';
-		results = presidentialResult;
-	}else{
-		value = 'parliamentary-overview';
-		results = paliamentaryResult;
+	var testResult;
+	
+	callback = callback || region || scope;
+	if (scope !== 'overview' && scope !== 'constituency') {
+		region = typeof scope === 'string'? scope : region;
+		scope = 'overview';
+	}
+		
+	if ( typeof callback !== "function" ) return;
+	
+	if ( params.contest === 'president' ){
+		value = 'presidential-' + scope;
+		if ( DEBUG ) {
+			testResult = (scope === 'overview')? presidentialResult : presidentialConstituency;
+		}
+	} else {
+		value = 'parliamentary-' + scope;
+		if ( DEBUG ) {
+			testResult = (scope === 'overview')? paliamentaryResult : parliamentaryConstituency;
+		}
 	}
 	
-	$.getJSON("http://election-map-gh.appspot.com/vote-data?action=get&value="+value, function(data){
-		results = data;
+	var query = "action=get&value=" + value;
+	
+	if (typeof region === "string") {
+		if (scope === 'constituency') {
+			region = region.replace(" ","+");
+			query = query + "&region=" + region;
+		} else if (resultCache[query]) { // scope == 'overview'
+			callback(resultCache[query][region.toUpperCase()]);
+			return;
+		}		
+	}
+	
+	if ( resultCache[query] ) {
+		callback(resultCache[query]);
+		return;
+	}
+	
+	$.getJSON( baseUrl + query, function( data ) {
+		resultCache[query] = data;
+		if (scope === 'overview' && typeof region === 'string') {
+			data = resultCache[query][region.toUpperCase()];
+		}
+		callback(data);
+		console.log(status, ': reqeust completed');
+		
+	}).error( function( jqXHR, status ) {
+		// show error message
+		console.log(status, ': could not complete request');
+		if (DEBUG) {			
+			resultCache[query] = testResult;
+			if (scope === 'overview' && typeof region === 'string') {
+				data = resultCache[query][region.toUpperCase()];
+			}
+			callback(testResult);
+		}
 	});
 }
-loadResult();
 
 function contentTable() {
 	function button( contest, index, contests ) {
@@ -463,7 +524,7 @@ function formatCandidatesTotal(resultsJson) {
 	}
 	
 	cand = getTopCandidates(convertToCandidates(parties),'votes',0);	
-	if(params.contest === 'president'){
+	if(params.contest === 'president') {
 		var contentString = S(
 			'<div>',
 			'<table class="candidates" cellpadding="8px" cellspacing="0">',
@@ -609,7 +670,6 @@ var default_style = {
 	fillOpacity: 0.5
 };
 
-var feature_map = {};
 var feature_collection;
 var currentFeature, prevFeature, candidates;
 
@@ -655,7 +715,7 @@ function formatNumber( nStr ) {
 }
 
 function createInfoContent(region, candidates){
-	if(params.contest === 'president'){
+	if ( params.contest === 'president' ){
 		var contentString = S(
 			'<div class="tiptitlebar">',
 			'<div style="float:left;">',
@@ -681,7 +741,7 @@ function createInfoContent(region, candidates){
 				'<div class="candidate-delegates"></div></td></tr>'	
 			);
 		}
-	}else{
+	} else {
 		var contentString = S(
 				'<div class="tiptitlebar">',
 				'<div style="float:left;">',
@@ -707,8 +767,7 @@ function createInfoContent(region, candidates){
 				);
 			}
 	}
-	contentString = S(contentString, '</tbody></table></div><div class="click-for-local faint-text">Click for detailed results</div></div>');
-	    
+	contentString = S(contentString, '</tbody></table></div><div class="click-for-local faint-text">Click for detailed results</div>');	    
 	return contentString;
 }
 
@@ -723,15 +782,13 @@ function getRegionJSON(region){
 var tipOffset = { x:10, y:20 };
 var $maptip = $('#maptip'), tipHtml;
 
-function formatTip() {
-	if( ! currentFeature ) {
-		candidates = null;
-		return null;
-	}
-	if (currentFeature != prevFeature) {
-		candidates = getTopCandidates(convertToCandidates(getRegionJSON(currentFeature.geojsonProperties.ID)), 'votes', 24);
-	}
-	return createInfoContent(currentFeature.geojsonProperties.ID, candidates);
+function formatTip( region ) {
+	loadResult(region, function (result) {
+		if (currentFeature != prevFeature) {
+			candidates = getTopCandidates(convertToCandidates(result), 'votes', 24);
+		}
+	});	
+	return createInfoContent(region, candidates);
 }
 
 function moveTip( event ) {	
@@ -762,8 +819,10 @@ function moveTip( event ) {
 }
 
 function showTip() {
-	tipHtml = formatTip();
-	if( tipHtml ) {
+	
+	if( currentFeature ) {
+		candidates = null;
+		tipHtml = formatTip( currentFeature.geojsonProperties.ID );
 		$maptip.html( tipHtml ).show();
 		return true;
 	}
@@ -773,53 +832,45 @@ function showTip() {
 	}
 }
 
-function loadFeature( feature, color ) {
-
-	// on click			
-	google.maps.event.addListener(feature, 'click', function (e) {		
-		formatCandidatesConstituency(this);
- 	});
-	
-	// on mouseover
- 	google.maps.event.addListener(feature, 'mouseover', function (e) {
- 		// use 'this' to access regions	
- 		prevFeature = currentFeature;
-		currentFeature = this;
-		moveTip(e);
- 	});
-
-	// on mouseout
- 	google.maps.event.addListener(feature, 'mouseout', function (e) {
- 		// use 'this' to access regions
- 		//this.set('fillColor', default_style.fillColor);
- 		currentFeature = null; 		
- 	});	
- 	
- 	$body.bind( 'click mousemove', moveTip );
- 	feature.set('fillColor', color || default_style.fillColor);
- 	feature.setMap(map);
-}
-
-function loadRegion( region, style ) {	
+function loadFeatures( result ) {
 	clearFeatures();
-	var feature;
-	var cand;
-	var color;
-	region = region || "";
-	region = region.toUpperCase();
-	style = style || default_style;
-	
 	// load once
-	$("#sidebar-results-header").html(formatCandidatesTotal(results));
+	$("#sidebar-results-header").html(formatCandidatesTotal( result ));
 	
 	if(!feature_collection){
-		feature_collection = new GeoJSON( geojson, style );
+		feature_collection = new GeoJSON( geojson, default_style );
 	}
+	
+	var feature, cand, color, region;
+
 	for (var i=0; i < feature_collection.length; i++) {
 		feature = feature_collection[i]
-		cand = getTopCandidates(convertToCandidates(getRegionJSON(feature.geojsonProperties.ID)), 'votes', 24);
+		region = feature.geojsonProperties.ID.toUpperCase();
+		cand = getTopCandidates(convertToCandidates(result[region]), 'votes', 24);
 		color = (cand[0].votes && cand[0].votes > 0) ? cand[0].color : null;
-		loadFeature(feature, color);		
+		
+		// on click			
+		google.maps.event.addListener(feature, 'click', function (e) {		
+			formatCandidatesConstituency();
+	 	});
+		
+		// on mouseover
+	 	google.maps.event.addListener(feature, 'mouseover', function (e) {
+	 		// use 'this' to access regions	
+	 		prevFeature = currentFeature;
+			currentFeature = this;
+			moveTip(e);
+	 	});
+
+		// on mouseout
+	 	google.maps.event.addListener(feature, 'mouseout', function (e) {
+	 		// use 'this' to access regions
+	 		currentFeature = null; 		
+	 	});	
+	 	
+	 	$body.bind( 'mousemove', moveTip );
+	 	feature.set('fillColor', color || default_style.fillColor);
+	 	feature.setMap(map);	
 	}
 	
 	initSelectors();
@@ -838,8 +889,7 @@ function clearFeatures(){
 }
 
 function loadView() {
-	loadResult();
-	loadRegion();
+	loadResult('overview', loadFeatures);
 	$('#spinner').hide();
 }
 
@@ -899,6 +949,7 @@ function initMap() {
 	map.mapTypes.set( 'simple', mapType );		
 }
 
+loadView();
 initMap();
 resizeViewOnly();
 
@@ -916,8 +967,6 @@ function initSelectors() {
 		});
 	}
 }
-             
-$window
-.bind( 'load', loadView )
-.bind( 'resize', resizeViewOnly );
+
+$window.bind( 'load', loadView ).bind( 'resize', resizeViewOnly );
 
