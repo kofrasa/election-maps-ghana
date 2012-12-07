@@ -3,10 +3,16 @@ var times = {
 	offset: 0
 };
 
-var DEBUG = true;
+var DEBUG = false;
 
 params.year = params.year || '2012';
 params.contest = params.contest || 'president';
+
+//Analytics
+var _gaq = _gaq || [];
+_gaq.push([ '_setAccount', 'UA-36902519-1' ]);
+//_gaq.push([ '_setDomainName', '.election-maps.appspot.com' ]);
+_gaq.push([ '_trackPageview' ]);
 
 function cacheUrl( url ) {
 	return opt.nocache ? S( url, '?q=', times.gadgetLoaded ) : url;
@@ -310,6 +316,15 @@ function loadResult( scope, region, callback ) {
 	});
 }
 
+function analytics( category, action, label, value, noninteraction ) {
+	//analytics.seen = analytics.seen || {};
+	//if( analytics.seen[path] ) return;
+	//analytics.seen[path] = true;
+	_gaq.push([ '_trackEvent',
+		category, action, label, value, noninteraction
+	]);
+}
+
 function renderConstituencies(region, result) {	
 	
 	var names = [];
@@ -446,6 +461,7 @@ function formatCandidatesConstituency() {
 	var region = currentFeature.geojsonProperties.ID.toLowerCase();
 	loadResult('constituency', region, function (result) {				
 		// aggregate results for each constituency	
+		analytics( params.contest, region, 'region');
 		renderConstituencies(region, result);
 	});	
 }
@@ -1052,10 +1068,20 @@ function initSelectors() {
 			$selectors.removeClass( 'selected' );
 			$(this).addClass( 'selected' );
 			params.contest = this.id.split('-')[1];
+			analytics( params.contest, 'contest');
 			loadView();
+			
 		});
 	}
 }
 
 $window.bind( 'load', loadView ).bind( 'resize', resizeViewOnly );
+
+getScript( S(
+		location.protocol == 'https:' ? 'https://ssl' : 'http://www',
+		'.google-analytics.com/',
+		DEBUG ? 'u/ga_debug.js' : 'ga.js'
+	) );
+	
+analytics( 'map', 'load' );
 
