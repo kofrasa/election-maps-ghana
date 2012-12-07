@@ -88,14 +88,13 @@ opt.writeScript(
 
 //opt.writeScript( 'static/js/underscore.js', opt.nocache );
 opt.writeScript(' http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js', opt.nochace);
-//opt.writeScript( 'static/js/polygonzo.js', opt.nocache );
 opt.writeScript( 'static/js/scriptino.js', opt.nocache );
 opt.writeScript( 'static/js/GeoJSON.min.js', opt.nocache );
 opt.writeScript( 'static/js/maps/gha.min.js', opt.nocache );
 opt.writeScript( 'static/js/results-templates-gh.js', opt.nocache );
 opt.writeScript( 'static/locale/lang-' + params.hl + '.js', opt.nocache );
-opt.writeScript( 'static/js/results-data-gh.js', opt.nocache );
-opt.writeScript( 'static/js/results-map-gh.js', opt.nocache );
+opt.writeScript( 'static/js/results-data-gh.js', true );
+opt.writeScript( 'static/js/results-map-gh.js', true );
 
 
 
