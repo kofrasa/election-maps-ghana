@@ -206,17 +206,18 @@ document.write(
 );
 
 var presidentialResult = {
-	"GREATER ACCRA":{"NDC":8,"CPP":1,"GCPP":0,"UFP":10,"PNC":0,"PPP":0,"NPP":7,"INDP":1},
-	"NORTHERN":{"NDC":2,"CPP":2,"GCPP":1,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":12},
-	"ASHANTI":{"NDC":12,"CPP":3,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},
-	"BRONG AHAFO":{"NDC":34,"CPP":4,"GCPP":67,"UFP":23,"PNC":77,"PPP":67,"NPP":0,"INDP":0},
-	"CENTRAL":{"NDC":9,"CPP":5,"GCPP":6,"UFP":2,"PNC":9,"PPP":5,"NPP":8,"INDP":6},
-	"EASTERN":{"NDC":4,"CPP":6,"GCPP":1,"UFP":4,"PNC":3,"PPP":6,"NPP":4,"INDP":8},
-	"VOLTA":{"NDC":13,"CPP":7,"GCPP":32,"UFP":52,"PNC":5,"PPP":33,"NPP":55,"INDP":19},
-	"WESTERN":{"NDC":5,"CPP":8,"GCPP":7,"UFP":4,"PNC":2,"PPP":5,"NPP":2,"INDP":5},
-	"UPPER EAST":{"NDC":7,"CPP":9,"GCPP":6,"UFP":7,"PNC":3,"PPP":4,"NPP":3,"INDP":8},
-	"UPPER WEST":{"NDC":2,"CPP":10,"GCPP":3,"UFP":7,"PNC":8,"PPP":4,"NPP":9,"INDP":6}
+	"UPPER EAST":[{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},{"REPORTED":0,"TOTAL":15}],
+	"CENTRAL":[{"NDC":0,"CPP":40,"GCPP":0,"UFP":30,"PNC":0,"PPP":0,"NPP":0,"INDP":0},{"REPORTED":3,"TOTAL":23}],
+	"WESTERN":[{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},{"REPORTED":0,"TOTAL":26}],
+	"GREATER ACCRA":[{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},{"REPORTED":0,"TOTAL":34}],
+	"BRONG AHAFO":[{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},{"REPORTED":0,"TOTAL":29}],
+	"ASHANTI":[{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},{"REPORTED":0,"TOTAL":47}],
+	"EASTERN":[{"NDC":10,"CPP":30,"GCPP":40,"UFP":34,"PNC":50,"PPP":70,"NPP":50,"INDP":20},{"REPORTED":21,"TOTAL":33}],
+	"UPPER WEST":[{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},{"REPORTED":0,"TOTAL":11}],
+	"VOLTA":[{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},{"REPORTED":0,"TOTAL":26}],
+	"NORTHERN":[{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},{"REPORTED":0,"TOTAL":31}]
 };
+
 var paliamentaryResult = {
 	"VOLTA":{"NDC":0,"URP":0,"CPP":0,"GFP":0,"NDP":0,"PNC":0,"PPP":0,"YPP":0,"NVP":0,"NPP":0,"INDP":0},
 	"GREATER ACCRA":{"NDC":0,"IPP":0,"URP":0,"CPP":0,"DPP":0,"NDP":0,"PNC":0,"PPP":0,"NVP":0,"NPP":1,"INDP":0},
@@ -251,10 +252,14 @@ function loadResult( scope, region, callback ) {
 	
 	if ( params.contest === 'president' ){
 		value = 'presidential-' + scope;
-		testResult = (scope === 'overview')? presidentialResult : presidentialConstituency;
+		if ( DEBUG ) {
+			testResult = (scope === 'overview')? presidentialResult : presidentialConstituency;
+		}
 	} else {
 		value = 'parliamentary-' + scope;
-		testResult = (scope === 'overview')? paliamentaryResult : parliamentaryConstituency;
+		if ( DEBUG ) {
+			testResult = (scope === 'overview')? paliamentaryResult : parliamentaryConstituency;
+		}
 	}
 	
 	var query = "action=get&value=" + value;
@@ -268,7 +273,7 @@ function loadResult( scope, region, callback ) {
 			return;
 		}		
 	}
-	
+
 	if ( resultCache[query] ) {
 		callback(resultCache[query]);
 		return;
@@ -365,16 +370,17 @@ function initConstituencyEvents( region, result ) {
 			$(value).unbind('click').bind('click', function (e) {
 				var $value = $(this);
 				$("#subregion li").removeClass('selected-region');
-				$value.addClass('selected-region');						
-				var $result_div = $('#constituency_result_div').empty();
-				$result_div.hide();
+				$value.addClass('selected-region');	
+				
+				var $result_div = $('#constituency_result_div').empty().hide();				
 				var content;
 				if (params.contest === 'president') {
+					console.log(result);
 					var candidates = getTopCandidates(convertToCandidates(result[$value.text()]), 'votes', 24);					
-					content = createInfoContent($value.text(), candidates);	
+					content = createInfoContent($value.text(), candidates, null);	
+					//content = $result_div.html(createInfoContent($(this).text(), candidates, null));
 					$result_div.html(content);
 				} else {
-					console.log(result[$value.text()]);
 					content = createParliamentaryConstituencyInfo( $value.text(), result[$value.text()] );			
 					$result_div.html(content);
 					$result_div.find('td').css({'border':'none', 'padding':'0px 5px'});
@@ -443,7 +449,6 @@ function formatCandidatesConstituency() {
 		renderConstituencies(region, result);
 	});	
 }
-
 
 function createParliamentaryConstituencyInfo( region, results ) {
 	var candidates = [];	
@@ -569,7 +574,11 @@ function getParties(resultsJson){
 	var parties = {};
 	
 	for (k in resultsJson) {
-		region = resultsJson[k];
+		if(params.contest === 'president'){
+			region = resultsJson[k][0];
+		}else{
+			region = resultsJson[k];
+		}
 		for(p in region){
 			parties[p] = 0;			
 		}
@@ -583,7 +592,11 @@ function formatCandidatesTotal(resultsJson) {
 	
 	// aggregate votes per party
 	for (k in resultsJson) {
-		region = resultsJson[k];
+		if(params.contest === 'president'){
+			region = resultsJson[k][0];
+		}else{
+			region = resultsJson[k];
+		}
 		for (p in region) {
 			parties[p] = parties[p] + region[p];
 		}
@@ -642,8 +655,8 @@ function formatCandidatesTotal(resultsJson) {
 							'</td>',
 						'<td align="left"><b></b></td>',
 					'<td align="center">',
-						'<div class="candidate-percent">',formatPercent(cand[c].vsAll),'</div>',
-						'<div class="candidate-votes">',formatNumber(cand[c].votes),'</div>',
+						//'<div class="candidate-percent">',formatPercent(cand[c].vsAll),'</div>',
+						'<div class="candidate-votes" style="font-weight:bold">',formatNumber(cand[c].votes),'</div>',
 					'</td>',
 					'</tr>'				
 			);	
@@ -737,7 +750,7 @@ var default_style = {
 };
 
 var feature_collection;
-var currentFeature, prevFeature, candidates;
+var currentFeature, prevFeature, candidates, stats;
 
 function formatCandidateAreaPatch( candidate, max ) {
 	var vsTop = candidate.vsTop;
@@ -780,14 +793,18 @@ function formatNumber( nStr ) {
 	return x1 + x2;
 }
 
-function createInfoContent(region, candidates){
+function createInfoContent(region, candidates, stats){
 	if ( params.contest === 'president' ){
+		if (stats) {
+			stats = S(formatPercent(stats["REPORTED"]/stats["TOTAL"]),
+					' reporting (', stats["REPORTED"], ' / ', stats["TOTAL"] , ')');					
+		}
 		var contentString = S(
 			'<div class="tiptitlebar">',
 			'<div style="float:left;">',
 			'<span class="tiptitletext">'+region+' Region</span>',
 			'</div><div style="clear:left;">',
-			'</div><div class="tipreporting"></div>',
+			'</div><div class="tipreporting">', stats || '', '</div>',
 			'<table class="candidates" cellpadding="0" cellspacing="0">',
 			'<tbody><tr><th colspan="3" style="text-align:left; padding-bottom:4px;">Candidate</th>',
 			'<th style="text-align:right; padding-bottom:4px;">Votes</th>',
@@ -827,8 +844,8 @@ function createInfoContent(region, candidates){
 					'<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px; font-size:100%"><div class="first-name"><b>',candidates[c].party+'</b></div>',
 					//'<div class="last-name" style="font-weight:bold;">', candidates[c].party, '</div></div></td>',
 					'<td style="text-align:center;">', formatCandidateAreaPatch(candidates[c], 24),
-					'</td><td style="text-align:right; padding-left:6px;"><div class="candidate-percent">',formatPercent(candidates[c].vsAll),'</div>',
-					'<div class="candidate-votes">',formatNumber(candidates[c].votes),'</div></td><td class="right" style="text-align:right; padding-left:6px;">',
+					'</td><td style="text-align:right; padding-left:6px;">',
+					'<div class="candidate-votes" style="font-weight:bold; font-size:100%;margin-right:10px">',formatNumber(candidates[c].votes),'</div></td><td class="right" style="text-align:right; padding-left:6px;">',
 					'<div class="candidate-delegates"></div></td></tr>'	
 				);
 			}
@@ -851,10 +868,13 @@ var $maptip = $('#maptip'), tipHtml;
 function formatTip( region ) {
 	loadResult(region, function (result) {
 		if (currentFeature != prevFeature) {
-			candidates = getTopCandidates(convertToCandidates(result), 'votes', 24);
+			stats = (result.length) ? result[1] : null;
+			
+			candidates = ( params.contest === 'president' ) ? getTopCandidates(convertToCandidates(result[0]), 'votes', 24):getTopCandidates(convertToCandidates(result), 'votes', 24)
+			
 		}
 	});	
-	return createInfoContent(region, candidates);
+	return createInfoContent(region, candidates, stats);
 }
 
 function moveTip( event ) {	
@@ -907,12 +927,13 @@ function loadFeatures( result ) {
 		feature_collection = new GeoJSON( geojson, default_style );
 	}
 	
-	var feature, cand, color, region;
+	var feature, cand, color, region, jsonData;
 
 	for (var i=0; i < feature_collection.length; i++) {
 		feature = feature_collection[i]
 		region = feature.geojsonProperties.ID.toUpperCase();
-		cand = getTopCandidates(convertToCandidates(result[region]), 'votes', 24);
+		jsonData = params.contest === 'president'? result[region][0] : result[region]; 
+		cand = getTopCandidates(convertToCandidates(jsonData), 'votes', 24);
 		color = (cand[0].votes && cand[0].votes > 0) ? cand[0].color : null;
 		
 		// on click			
@@ -955,9 +976,12 @@ function clearFeatures(){
 }
 
 function loadView() {
-	loadResult('overview', loadFeatures);
-	$('#spinner').hide();
+	loadResult('overview', function (result) {
+		loadFeatures( result );
+		$('#spinner').hide();
+	});
 }
+//loadView();
 
 var mapStyles = [
  {
@@ -1015,7 +1039,6 @@ function initMap() {
 	map.mapTypes.set( 'simple', mapType );		
 }
 
-loadView();
 initMap();
 resizeViewOnly();
 
