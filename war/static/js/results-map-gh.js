@@ -3,7 +3,7 @@ var times = {
 	offset: 0
 };
 
-var DEBUG = true;
+var DEBUG = false;
 
 params.year = params.year || '2012';
 params.contest = params.contest || 'president';
@@ -237,6 +237,32 @@ var parliamentaryConstituency = {"ABETIFI":{"NDC":[0,"SAMUEL ASAMOAH"],"NPP":[0,
 var resultCache = {};
 var baseUrl = 'http://election-map-gh.appspot.com/vote-data?';
 
+
+function getResultJSON( url, success, error ) {
+	var timeout = 15 * 1000;
+	$.ajax({
+		url: url,
+		dataType: 'json',
+		cache: true,
+		timeout: timeout,
+		success: function (data) {
+			success(data);
+		},
+		error: function( jqXHR, status ) {
+			if( status == 'timeout' ) {
+				getResultJSON( url , success, error);
+			}
+			else if (DEBUG) {
+				error();
+			} else {
+				setTimeout( function() {
+					getResultJSON( url );
+				}, timeout );
+			}
+		}
+	});
+}
+
 function loadResult( scope, region, callback ) {
 	
 	var value;
@@ -298,14 +324,15 @@ function loadResult( scope, region, callback ) {
 			console.log(testResult);
 			callback(testResult);
 		} else {
-			if (scope === 'overview') {
-				for (var k in testResult) {
-					for (var u in testResult[k]) {
-						testResult[k][u] = 0;
-					}
-				}
-				callback(testResult);
-			}
+//			if (scope === 'overview') {
+//				for (var k in testResult) {
+//					for (var u in testResult[k]) {
+//						//testResult[k][u] = 0;
+//					}
+//				}
+//				console.log(testResult);
+//				callback(testResult);
+//			}
 		}
 	});
 }
@@ -932,7 +959,8 @@ function loadFeatures( result ) {
 	for (var i=0; i < feature_collection.length; i++) {
 		feature = feature_collection[i]
 		region = feature.geojsonProperties.ID.toUpperCase();
-		jsonData = params.contest === 'president'? result[region][0] : result[region]; 
+		console.log(result);
+		jsonData = params.contest === 'president'? result[region][0] : result[region]; 		
 		cand = getTopCandidates(convertToCandidates(jsonData), 'votes', 24);
 		color = (cand[0].votes && cand[0].votes > 0) ? cand[0].color : null;
 		
