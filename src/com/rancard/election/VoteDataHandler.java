@@ -3,6 +3,7 @@ package com.rancard.election;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +103,7 @@ public class VoteDataHandler extends HttpServlet {
 		} catch (Exception e) {
 			
 			response = "EXCEPTION " + e.getMessage();
+			e.printStackTrace();
 		}
 		resp.setContentType(responseType);
 		resp.getWriter().println(response);
@@ -115,17 +117,18 @@ public class VoteDataHandler extends HttpServlet {
 			for(Entity e: entities) {
 				
 				Map<String,Object> map = e.getProperties();
-				json.append("\"" + map.get(REGION) + "\":{");
+				json.append("\"" + map.get(REGION) + "\":[{");
 				//map.remove(REGION);
 				for(String key: map.keySet()) {
-					if(key.equals(REGION)){
+					if(key.equals(REGION)  || key.equals("TOTAL")|| key.equals("REPORTED")){
 						continue;
 					}
 					json.append("\"" + key + "\":");
 					json.append(Integer.valueOf(map.get(key).toString())).append(",");										
 				}
 				json.deleteCharAt(json.length()-1);
-				json.append("},");					
+				json.append("},").append("{\"REPORTED\":"+Integer.valueOf(map.get("REPORTED").toString())).append(",")
+				.append("\"TOTAL\":"+Integer.valueOf(map.get("TOTAL").toString())).append("}],");
 			}
 			json.deleteCharAt(json.length()-1);
 			json.append("}");
@@ -284,17 +287,20 @@ public class VoteDataHandler extends HttpServlet {
 			if (values == null || values.size() == 0)
 				return "Nothing in spreadsheet";
 			
-			List<Entity> constituencies = new ArrayList<Entity>();
+			HashMap<Entity, Boolean> constituencies = new HashMap<Entity, Boolean>();
 
 			long constituencyKey = 201212070000L;			
 			
 			
 			String [] sheetColumns = worksheet.getWorksheetColumns();
+			
+			
 
 			for (ListEntry entry : values) {				
 				Entity entity = new Entity(KeyFactory.createKey("presidential-constituency", constituencyKey));				
 				CustomElementCollection entryElements = entry.getCustomElements();
 				
+				boolean confirmed = (entryElements.getValue(CONFIRMATION) == null || entryElements.getValue(CONFIRMATION).equals("")) ? false: true;
 				
 				
 				for(int i = 0; i < sheetColumns.length; i++)
@@ -303,7 +309,7 @@ public class VoteDataHandler extends HttpServlet {
 						entity.setProperty(	sheetColumns[i], entryElements.getValue(sheetColumns[i]).trim());
 					}
 					else{
-						if(entryElements.getValue(CONFIRMATION) == null || entryElements.getValue(CONFIRMATION).equals("")){
+						if(!confirmed){
 							entity.setProperty(sheetColumns[i], 0);
 						}else{
 							entity.setProperty(sheetColumns[i],parseStringToInt(entryElements.getValue(sheetColumns[i].trim())));
@@ -311,24 +317,35 @@ public class VoteDataHandler extends HttpServlet {
 					}
 				}				
 
-				constituencies.add(entity);
+				constituencies.put(entity, confirmed);
 				constituencyKey = constituencyKey + 1;
 
 			}
 
-			datastore.put(constituencies);
+			datastore.put(constituencies.keySet());
 			datastore.put(summarisePresidentialEntities(constituencies, regionKey));
 			response = "Presidential Sheet Updated";
 		}else{
 			List<ListEntry> values = handler.getWorksheetEntries(value);
 			List<String> constituencies = new ArrayList<String>();
 			List<String> parties = new ArrayList<String>();
+			Map<String, Long> keys = new HashMap<String, Long>();
+			keys.put("GREATER ACCRA", 1000L);
+			keys.put("EASTERN", 2000L);
+			keys.put("WESTERN", 3000L);
+			keys.put("UPPER EAST", 4000L);
+			keys.put("UPPER WEST", 5000L);
+			keys.put("VOLTA", 6000L);
+			keys.put("CENTRAL", 7000L);
+			keys.put("ASHANTI", 8000L);
+			keys.put("BRONG AHAFO", 9000L);
+			keys.put("NORTHERN", 10000L);
 			
 			if (values == null || values.size() == 0)
 				return "Nothing in spreadsheet";
 			
 			String [] sheetColumns = Worksheet.PALIAMENTARY.getWorksheetColumns();
-			long entryKey = 20121207000000L;
+			long entryKey = keys.get(value.toUpperCase());
 			
 			
 			List<Entity> constituencyEntries = new ArrayList<Entity>();
@@ -367,25 +384,13 @@ public class VoteDataHandler extends HttpServlet {
 			
 			
 			
-			datastore.put(summarisePaliamentaryEntities(constituencyEntries, constituencies, parties, value, useKey("parliamentary-overview", value)));
+			datastore.put(summarisePaliamentaryEntities(constituencyEntries, constituencies, parties, value, entryKey/1000));
 			response = value+" Sheet Updated";
 		}
 		return response;
 	}
 	
-	private long useKey(String kind, String region){
-		Query query = new Query(kind);
-		long max = 0;
-		for(Entity e: datastore.prepare(query).asIterable()){
-			if(e.getProperty(REGION).toString().equalsIgnoreCase(region)){
-				return e.getKey().getId();
-			}
-			if(max < e.getKey().getId()){
-				max = e.getKey().getId();
-			}
-		}
-		return (max + 1);
-	}
+
 
 	private Entity summarisePaliamentaryEntities(List<Entity> constituencyEntries, List<String> constituencies, 
 			List<String> parties, String value, long regionKey){
@@ -434,45 +439,57 @@ public class VoteDataHandler extends HttpServlet {
 		
 	}
 	
-	private List<Entity> summarisePresidentialEntities(List<Entity> constituencies,	long regionKey) {
+	private List<Entity> summarisePresidentialEntities(HashMap<Entity, Boolean> constituencies,	long regionKey) {
 		List<Entity> regions = new ArrayList<Entity>();		
-
+		
 		
 		String [] sheetColumns = 	Worksheet.PRESIDENTIAL.getWorksheetColumns();
 		logger.log(Level.SEVERE, sheetColumns.toString());
-		for (Entity entity : constituencies) {
+		for (Entity entity : constituencies.keySet()) {
+			logger.log(Level.WARNING, "Entity = "+ entity.toString());
 			boolean updated = false;
 				
 
-			for (Entity e : regions) {
-					
-					if (e.getProperty(REGION).toString().equalsIgnoreCase(entity.getProperty(REGION).toString())) {
+			for (Entity e : regions) {					
+				if (e.getProperty(REGION).toString().equalsIgnoreCase(entity.getProperty(REGION).toString())) {
 						
-						for(int i = 2; i < sheetColumns.length; i++){
-							e.setProperty(sheetColumns[i],Integer.parseInt(e.getProperty(sheetColumns[i]).toString())
-									+ Integer.parseInt(entity.getProperty(sheetColumns[i]).toString()));
-						}						
-						updated = true;
+					for(int i = 2; i < sheetColumns.length; i++){
+						e.setProperty(sheetColumns[i],Integer.parseInt(e.getProperty(sheetColumns[i]).toString())
+								+ Integer.parseInt(entity.getProperty(sheetColumns[i]).toString()));
+					}	
+					e.setProperty("REPORTED", Integer.parseInt(e.getProperty("REPORTED").toString()) +  (constituencies.get(entity) ? 1 : 0));
+					e.setProperty("TOTAL", Integer.parseInt(e.getProperty("TOTAL").toString())+1);
+					updated = true;
+				}
+			}
+
+			if (!updated) {
+				Entity newEntity = new Entity(KeyFactory.createKey("presidential-overview", regionKey));
+				for(int i = 0; i< sheetColumns.length; i++){
+					if(i == 1){
+						continue;
 					}
-				}
-
-				if (!updated) {
-					Entity newEntity = new Entity(KeyFactory.createKey("presidential-overview", regionKey));
-					for(int i = 0; i< sheetColumns.length; i++){
-						if(i == 1){
-							continue;
-						}
-						newEntity.setProperty(sheetColumns[i],	entity.getProperty(sheetColumns[i]));
-					}					
-
-					regions.add(newEntity);
-					regionKey += 1;
-				}
+					newEntity.setProperty(sheetColumns[i],	entity.getProperty(sheetColumns[i]));
+				}					
+				
+				newEntity.setProperty("REPORTED", constituencies.get(entity) ? 1 : 0);
+				//logger.log(Level.WARNING, "Number of candidates "+ (constituencies.get(entity) ? 1 : 0));
+				newEntity.setProperty("TOTAL", 1);
+				regions.add(newEntity);
+				regionKey += 1;
+			}
+			
+			
+				
 			
 		}
 
 		return regions;
 	}
+	
+
+	
+
 
 	private int parseStringToInt(String value) {
 		

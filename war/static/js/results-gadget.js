@@ -21,7 +21,7 @@ var opt = opt || {};
 
 opt.writeScript = function( url, nocache ) {
 	document.write(
-		'<script src="',
+		'<script type="text/javascript" src="',
 			url,
 			nocache ? '?' + (+new Date) : '',
 			'">',
@@ -93,8 +93,8 @@ opt.writeScript( 'static/js/GeoJSON.js', opt.nocache );
 opt.writeScript( 'static/js/maps/gha.min.js', opt.nocache );
 opt.writeScript( 'static/js/results-templates-gh.js', opt.nocache );
 opt.writeScript( 'static/locale/lang-' + params.hl + '.js', opt.nocache );
-opt.writeScript( 'static/js/results-data-gh.js', true );
-opt.writeScript( 'static/js/results-map-gh.js', true );
+opt.writeScript( 'static/js/results-data-gh.js', opt.nocache );
+opt.writeScript( 'static/js/results-map-gh.js', opt.nocache );
 
 
 

@@ -1,12 +1,48 @@
 var candidatesInfo = {
-	NDC: { color: '#20FF1F', firstName: 'John Dramani', lastName: 'Mahama', fullName: 'John Dramani Mahama'},
-	NPP: { color: '#FFFA00', firstName: 'Nana Addo Dankwa', lastName: 'Akufo-Addo', fullName: 'Nana Addo Dankwa Akufo-Addo'},
+	NDC: { color: '#FF1300', firstName: 'John Dramani', lastName: 'Mahama', fullName: 'John Dramani Mahama'},
+	NPP: { color: '#1700E8', firstName: 'Nana Addo Dankwa', lastName: 'Akufo-Addo', fullName: 'Nana Addo Dankwa Akufo-Addo'},
 	PPP: { color: '#E4Af95', firstName: 'Papa Kwesi', lastName: 'Nduom', fullName: 'Papa Kwesi Nduom'},
-	PNC: { color: '#FF1300', firstName: 'Hassan', lastName: 'Ayariga', fullName: 'Hassan Ayariga'},
+	PNC: { color: '#20FF1F', firstName: 'Hassan', lastName: 'Ayariga', fullName: 'Hassan Ayariga'},
 	CPP: { color: '#8A5C2E', firstName: 'Abu Sakara', lastName: 'Foster', fullName: 'Abu Sakara Foster'},
-	INDP: { color: '#EE00B5', firstName: 'Jacob Osei', lastName: 'Yeboah', fullName: 'Jacob Osei Yeboah'},
-	GCPP: { color: '#1700E8', firstName: 'Herbert', lastName: 'Lartey', fullName: 'Herbert Lartey'},
-	UFP: { color: '#336633', firstName: 'Akwasi Addai', lastName: 'Odike', fullName: 'Akwasi Addai Odike'}	
+	INDP: { color: '#000000', firstName: 'Jacob Osei', lastName: 'Yeboah', fullName: 'Jacob Osei Yeboah'},
+	GCPP: { color: '#FFFA00', firstName: 'Herbert', lastName: 'Lartey', fullName: 'Herbert Lartey'},
+	UFP: { color: '#336633', firstName: 'Akwasi Addai', lastName: 'Odike', fullName: 'Akwasi Addai Odike'},
+	NVP: { color: '#FF6633'},
+	YPP: { color: '#FF33CC'},
+	NDP: {color: '#993333'},
+	DPP: {color: '#FF6666'},
+	IPP: {color: '#'}
+}
+
+function strictCandidateSort(candidates){
+	var positions = ['NDC', 'GCPP', 'NPP', 'PPP', 'UFP', 'PNC', 'CPP'];
+	var candidatesSortedStrict = [];	
+	var added;
+	
+	for(var i = 0; i < positions.length; i++){
+		for(var j = 0; j < candidates.length; j++){		
+			if(positions[i] === candidates[j].party){
+				candidatesSortedStrict.push(candidates[j]);					
+				break;
+			}			
+		}
+	}
+	
+	var added;
+	for(var j = 0; j < candidates.length; j++){
+	    added = false;
+	    for(var i = 0; i < candidatesSortedStrict.length; i++){
+	        if(candidates[j].party === candidatesSortedStrict[i].party){
+	            added = true;
+	            break;
+	        }
+	    }
+	    if(!added){
+	        candidatesSortedStrict.push(candidates[j]);
+	    }
+	}
+	
+	return candidatesSortedStrict;
 }
 
 function Candidate(party, constituency, votes ) {
@@ -52,7 +88,9 @@ function getTopCandidates( candidates, sortBy, max ) {
 			for( var name in candidates ) {
 				top.push( _.clone( candidates[name] ) );
 			}
-		}
+		}		
+		
+		
 		var total = { votes: 0, electoralVotes: 0 };
 		
 		// Use trends data if applicable, and calculate total votes
@@ -82,7 +120,7 @@ function getTopCandidates( candidates, sortBy, max ) {
 		
 		// Sort in descending order and trim
 		top = top.reverse().slice( 0, max );
-		while( top.length  &&  ! top[top.length-1].votes && top.length >= 5 && params.contest !== 'president')
+		while( top.length  &&  ! top[top.length-1].votes && top.length >= 9)
 			top.pop();
 		
 		// Finally can compare each candidate with the topmost
@@ -92,6 +130,9 @@ function getTopCandidates( candidates, sortBy, max ) {
 				candidate.vsTop = candidate.votes / most;
 			});
 		}
+		
+		
+		//top = strictCandidateSort(top);
 		
 		return top;
 }
