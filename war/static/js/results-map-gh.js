@@ -3,7 +3,7 @@ var times = {
 	offset: 0
 };
 
-var DEBUG = false;
+var DEBUG = true;
 
 params.year = params.year || '2012';
 params.contest = params.contest || 'president';
@@ -288,8 +288,9 @@ function loadResult( scope, region, callback ) {
 		if (DEBUG) {			
 			resultCache[query] = testResult;
 			if (scope === 'overview' && typeof region === 'string') {
-				data = resultCache[query][region.toUpperCase()];
+				testResult = resultCache[query][region.toUpperCase()];
 			}
+			console.log(testResult);
 			callback(testResult);
 		} else {
 			if (scope === 'overview') {
@@ -304,10 +305,10 @@ function loadResult( scope, region, callback ) {
 	});
 }
 
-function renderConstituencies(region, results) {	
+function renderConstituencies(region, result) {	
 	
 	var names = [];
-	for (var k in results) {
+	for (var k in result) {
 		names.push(k);
 	}	
 	names.sort(function(a, b){
@@ -325,14 +326,16 @@ function renderConstituencies(region, results) {
 		'<div id="lightbox"></div>',
 		'<div id="subregion_div" style="outline:thin black solid">',
 			'<div id="subregion_title">',
-				'<div style="display:inline-block;font-weight:bold;border-bottom:solid thin #ccc;">',
-					'Constituencies for ',region.toUpperCase(), ' REGION',
+				'<div id="subregion_label" style="display:inline-block;font-weight:bold;border-bottom:solid thin #ccc;">',
+					'Constituencies for ', region.toUpperCase(), ' REGION',
 				'</div>',
 				'<div style="float:right; padding-right:20px;">',
 					'<a href="#">Click to Close</a>',
 				'</div>',
 			'</div>',
-			'<div id="subregion">'
+			'<div id="subregion">',
+			'<div style="clear:both;padding-left:15px;font-weight:bold;">Constituencies</div>',
+			'<div id="subregion_list">'
 	);
 
 	// generate list of constituencies
@@ -345,46 +348,58 @@ function renderConstituencies(region, results) {
 		}
 		contentString = S(contentString, '<li>',names[i],'</li>');
 	}
-	contentString = S(contentString, '</ul></div>');
+	contentString = S(contentString, '</ul></div></div>');
 	$body.append( contentString );	
-	initConstituencyEvents( results );
+	initConstituencyEvents( region, result );
 }
 
-function initConstituencyEvents( results ) {
-	
-	$('#subregion ul:last').css('border','none');
-	$("#subregion li").on('click', function () {
+function initConstituencyEvents( region, result ) {	
+	$('#subregion_list ul:last').css('border','none');
+	$("#subregion_list li").bind('click', function (e) {
 		var $currentItem  = $(this);				
 		var $sidebar = $('<ul></ul>');
 		var items = $("#subregion li");	
 
 		$.each(items, function (key,value) {
-			$(value).off('click').on('click', function () {		
+			$sidebar.append(value);
+			$(value).unbind('click').bind('click', function (e) {
+				var $value = $(this);
 				$("#subregion li").removeClass('selected-region');
-				$(value).addClass('selected-region');								
+				$value.addClass('selected-region');						
 				var $result_div = $('#constituency_result_div').empty();
-				var candidates = getTopCandidates(convertToCandidates(results[$(this).text()]), 'votes', 24);
 				$result_div.hide();
-				$result_div.html(createInfoContent($(this).text(), candidates));
-				$result_div.find('.click-for-local').remove();	
-				$result_div.find('.tiptitletext').text($(this).text());
-				$result_div.find('table').css('width','100%');
+				var content;
+				if (params.contest === 'president') {
+					var candidates = getTopCandidates(convertToCandidates(result[$value.text()]), 'votes', 24);					
+					content = createInfoContent($value.text(), candidates);	
+					$result_div.html(content);
+				} else {
+					console.log(result[$value.text()]);
+					content = createParliamentaryConstituencyInfo( $value.text(), result[$value.text()] );			
+					$result_div.html(content);
+					$result_div.find('td').css({'border':'none', 'padding':'0px 5px'});
+				}
+				
+				$result_div.find('.click-for-local').empty();	
+				$result_div.find('.tiptitletext').text($value.text());
+				$result_div.find('.tiptitlebar').css('border-bottom','none');
+				$result_div.find('table').css('width','100%');				
 				$result_div.css({
-					'width': '400px',
-					'margin-left': '40px',
+					'width': '450px',
+					'margin-left': '20px',
 					'margin-top': '10px',
 					'font-size': '14px'
 				});
 				$result_div.show();
-			});
-			$sidebar.append(value);
+			});			
 		});
 
 		$('ul.sublist').remove();
 		$sidebar.css({'height': '400px','width':'250px', 'overflow': 'auto',
-			'border':'thin outset #ccc', 'margin-left':'10px','float':'left'});		
+			'border':'thin outset #ccc', 'margin-left':'10px','float':'left','display':'inline-block'});		
 		
-		$('#subregion').html($sidebar)
+		// replace subregion content
+		$('#subregion_list').html($sidebar)
 			.append('<div id="constituency_result_div" style="float:left"></div>')
 			.append('<div style="clear:both"></div>');
 		
@@ -394,16 +409,24 @@ function initConstituencyEvents( results ) {
 	});	
 
 	// setup light box
-	$('#lightbox, #subregion_title a').click( function() {
-		$("#lightbox, #subregion_div").fadeOut(300, function () {		
+	$('#lightbox, #subregion_title a').click( function(e) {
+		e.preventDefault();
+		$("#lightbox, #subregion_div").fadeOut(300, function () {	
 			$("#subregion li").unbind();
-			$('#lightbox, #subregion_title a, #subregion_div').unbind().remove();
+			$('#lightbox, #subregion_div').unbind().remove();
 		});
 	});
+	
+	// set correct window labels
+	if ( params.contest === 'president') {
+		$('#subregion_title div').first().html('Presidential Results for ' + region.toUpperCase() + ' REGION');
+	} else {
+		$('#subregion_title div').first().html('Parliamentary Results for ' + region.toUpperCase() + ' REGION');
+	}
 
 	// load and show
 	var $subregion_div = $('#subregion_div');
-	var top = ($(window).height() - $subregion_div.height()) / 3;
+	var top = ($(window).height() - $subregion_div.height()) / 4;
 	var left = ($(window).width() - $subregion_div.width()) / 2;
 	top = top + "px";
 	left = left + "px";
@@ -420,6 +443,49 @@ function formatCandidatesConstituency() {
 		renderConstituencies(region, result);
 	});	
 }
+
+
+function createParliamentaryConstituencyInfo( region, results ) {
+	var candidates = [];	
+	for (var k in results) {
+		candidates.push(new Candidate(k, results[k][1], results[k][0]));
+	}
+	candidates = getTopCandidates(candidates, 'votes', 24);
+	
+	var contentString = S(
+		'<div class="tiptitlebar">',
+		'<div style="text-align:center;padding-bottom:10px;">',
+		'<span class="tiptitletext">'+region+'</span>',
+		'</div><div style="clear:left;">',
+		'</div><div class="tipreporting"></div>',
+		'<table class="candidates" cellpadding="0" cellspacing="0">',
+		'<tbody><tr><th style="text-align:left; padding-bottom:4px;width:60%;">Candidate</th>',
+		'<th style="text-align:center; padding-bottom:4px;">Party</th>',
+		'<th style="text-align:right; padding-bottom:4px;">Votes</th></tr>'
+	);
+	
+	var fname,lname,shade = '#fff';	
+	for(var c in candidates) {  
+		fname = candidates[c].constituency.split(' ');
+		lname = fname.pop();
+		fname = join(fname, ' ');
+		
+		shade = (c % 2 === 0)? '#eee':'#fff';
+		contentString = S(
+			contentString,
+			'<tr class="legend-candidate first" id="legend-candidate-', fname, '" ',
+				'style="background-color:',shade, '">',
+			'<td><div class="candidate-name" style="margin-top:4px; margin-bottom:4px;"><div class="first-name">',fname,'</div>',
+			'<div class="last-name" style="font-weight:bold;">',lname,'</div></div></td>',
+			'<td style="text-align:center;">',candidates[c].party,'</td>',
+			'<td style="text-align:right; padding-left:6px;">',
+			'<div class="candidate-votes">',formatNumber(candidates[c].votes),'</div></td></tr>'	
+		);
+	}
+	contentString = S(contentString, '</tbody></table></div><div class="click-for-local faint-text"></div>');
+	return contentString;
+}
+
 
 function contentTable() {
 	function button( contest, index, contests ) {
@@ -457,7 +523,7 @@ function contentTable() {
 					
 				'</div>',
 			'</div>',
-			'<div class="scroller" id="sidebar-scroll">',
+			'<div id="sidebar-scroll">', //-- class="scroller"
 				
 				'<div id="map-link" class="small-text" style="padding:8px 4px 4px 4px;">',
 					
@@ -505,15 +571,13 @@ function getParties(resultsJson){
 	for (k in resultsJson) {
 		region = resultsJson[k];
 		for(p in region){
-			parties[p] = 0;
-			
+			parties[p] = 0;			
 		}
 	}
 	return parties;
 }
 
 function formatCandidatesTotal(resultsJson) {
-	//var parties = {};	
 	
 	var parties = getParties(resultsJson);
 	
