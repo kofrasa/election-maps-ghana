@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+	<cron>
+    	<url>/vote-data?action=update&#38;value=presidential</url>
+    	<description>Repopulate the Presidential result every 15 minutes</description>
+    	<schedule>every 15 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=greater&#43;accra</url>
+    	<description>Repopulate the Greater Accra paliamentary result every 30 minutes</description>
+    	<schedule>every 30 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=central</url>
+    	<description>Repopulate the Central paliamentary result every 30 minutes</description>
+    	<schedule>every 30 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=brong&#43;ahafo</url>
+    	<description>Repopulate the Brong Ahafo paliamentary result every 30 minutes</description>
+    	<schedule>every 30 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=upper&#43;east</url>
+    	<description>Repopulate the Upper East parliamentary result every 30 minutes</description>
+    	<schedule>every 30 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=ashanti</url>
+    	<description>Repopulate the Ashanti parliamentary result every 30 minutes</description>
+    	<schedule>every 1 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=northern</url>
+    	<description>Repopulate the Northern parliamentary result every 30 minutes</description>
+    	<schedule>every 30 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=upper&#43;west</url>
+    	<description>Repopulate the Upper West parliamentary result every 30 minutes</description>
+    	<schedule>every 30 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=eastern</url>
+    	<description>Repopulate the Eastern parliamentary result every 30 minutes</description>
+    	<schedule>every 30 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=western</url>
+    	<description>Repopulate the Western parliamentary result every 30 minutes</description>
+    	<schedule>every 30 minutes</schedule>    	
+  	</cron>
+  	<cron>
+    	<url>/vote-data?action=update&#38;value=volta</url>
+    	<description>Repopulate the Volta parliamentary result every 30 minutes</description>
+    	<schedule>every 30 minutes</schedule>    	
+  	</cron>
+</cronentries>
