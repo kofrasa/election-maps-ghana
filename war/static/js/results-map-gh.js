@@ -26,7 +26,7 @@ _gaq.push([ '_setAccount', 'UA-36902519-1' ]);
 //_gaq.push([ '_setDomainName', '.election-maps.appspot.com' ]);
 _gaq.push([ '_trackPageview' ]);
 
-var DEBUG = false;
+var DEBUG = true;
 var $body = $('body');
 var $window = $(window), ww = $window.width(), wh = $window.height();
 var mapPixBounds;
@@ -187,10 +187,12 @@ document.write(
 		'#subregion_title a:hover { text-decoration:underline; }',
 		'#subregion ul { list-style:none; float:left; padding:0px 15px; margin-top:5px;',
 			'border-right: solid #eeeeee thin; width:240px;}',
-		'#subregion li { list-style: none; word-wrap:break-word; color: #08C; padding:5px 5px;}',
+		'#subregion li { list-style: none; word-wrap:break-word; padding:5px 5px; color:#bbb; }',
+		'#subregion li.active-region { color: #08C; }',
 		'#subregion li:hover { background-color:#eee; cursor: pointer;}',
 		'#subregion li.selected-region:hover,',
-		'#subregion li.selected-region { background-color:#08C; font-weight:bold; color:#fff; cursor: auto;}',
+		'#subregion li.selected-region { background-color:#08C; font-weight:bold; cursor: auto;}',
+		'#subregion li.selected-region.active-region {color:#fff;}',
 		'#lightbox { display: none; position:absolute; left:0; top:0; z-index: 1000;',
 		'min-width:100%; min-height: 100%; background-color: #000;opacity: 0.8;filter:alpha(opacity=90);}',
 	'</style>'
@@ -240,7 +242,7 @@ var paliamentaryResult = {
 };
 
 var presidentialConstituency = {"NEW EDUBIASE":{"NDC":32443545,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ADANSI ASOKWA":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"FOMENA":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AKROFUOM":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"OBUASI WEST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"OBUASI EAST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BEKWAI":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BOSOM- FREHO":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ODOTOBRI":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"MANSO NKWANTA":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"MANSO EDUBIA":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ATWIMA NWABIAGYA SOUTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ATWIMA NWABIAGYA NORTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ATWIMA MPONUA":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BOSOMTWI":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ATWIMA KWANWOMA":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"BANTAMA":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"KWADASO":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"NHYIAESO":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"MANHYIA NORTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"MNAHYIA SOUTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"OLD TAFO":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"SAUME":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"SUBIN":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ASOKWA":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"OFORIKROM":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ASAWASI":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"KWABRE EAST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AFIGYA KWABRE SOUTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AFIGYA KWABRE NORTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"EJISU":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"JUABEN":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ASANTE- AKIM SOUTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ASANTE- AKIM CENTRAL":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"ASNATE -AKIM NORTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"EFFIDUASE- ASOKORE":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"KUMAWU":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"SEKYERE AFRAM PLAINS":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"NSUTA KWAMAN":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"MAMPONG":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"EJURA SEKYE DUMASE":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AFIGYA SEKYERE EAST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"OFFINSO SOUTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"OFFINSO NORTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AHAFO ANO SOUTH WEST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AHAFO- ANO SOUTH EAST":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0},"AHAFO ANO NORTH":{"NDC":0,"CPP":0,"GCPP":0,"UFP":0,"PNC":0,"PPP":0,"NPP":0,"INDP":0}};
-var parliamentaryConstituency = {"WA WEST":{"NDC":[0,"HON. JOSEPH YIELEH CHIREH"],"NPP":[0,"ADAMS NUHU"],"PPP":[0,"FELIX S PIGRU"],"NDP":[0,"DARE WARIBATA"]},"LAMBUSSIE- KARNI":{"NDC":[0,"DERY K EDWARD"],"NPP":[0,"JOHN DOUGHR"],"PPP":[0,"BEINPUO ERNEST"],"PNC":[0,"ALHASSAN ZAKARIA"],"CPP":[0,"DAVID MWINFOR DERIBAA"],"NDP":[0,"AMOAH BASING"],"INDP":[0,"ISASAKAH SAGITO"]},"NADOWLI KALEO":{"NDC":[0,"ALBAN SUMANA K BAGBIN"],"NPP":[0,"DR ROBINSON DAKUBU BOYE"],"PPP":[0,"NAA ANGANNGMINI"],"PNC":[0,"KPAN JUDE THADDEUS"],"NDP":[0,"ADAMA AMORA"]},"SISSALA EAST":{"NDC":[0,"SULEMANA ALIJATA"],"NPP":[0,"ISSAHAKU AMIDU CHINNIA"],"PPP":[0,"LURIWIRE FUSEINI KANTON"],"PNC":[0,"MOSES DANI BAAH"],"URP":[0,"ABDULAI AMORO"],"INDP1":[0,"MUSAH ISSAH"]},"WA EAST":{"NDC":[0,"AMEEN SALIFU"],"NPP":[0,"BAYON GODFREY TANGU"],"PPP":[0,"BAKULI MARIAMA"],"PNC":[0,"AMADU BABA"],"NDP":[0,"YAHAYA ABDUL- HANIF"]},"JIRAPA":{"NDC":[0,"FRANCIS BAWAANA DAKURA"],"NPP":[0,"EDWARD ABU BAKA DOMBO"],"PNC":[0,"FATI A SADU"],"CPP":[0,"MUONAA ELIZABETH"],"DPP":[0,"ANGSIEMA JOYCELYN"],"NDP":[0,"CALLISTUS DOODAA TANG"],"INDP1":[0,"PAUL DERIGUBAA"]},"LAWRA":{"NDC":[0,"HON. SAMSON ABU"],"NPP":[0,"ANTHONY N YOH KARBO"],"PPP":[0,"JOSEPH K. B. DABUO"],"CPP":[0,"DOMINIC KAMBOZIE"],"NDP":[0,"MARK WONONUO"],"INDP":[0,"PASCHAL BAYLONDERE"]},"NANDOM":{"NDC":[0,"DR. BENJAMIN KUMBUOR"],"NPP":[0,"AMBROSE DERY"],"NDP":[0,"ELVIS TAABAVI"]},"SISSALA WEST":{"NDC":[0,"AMIN AMIDU SULEMANA"],"NPP":[0,"PATRICK AL- HASSAN ADAMAH"],"PNC":[0,"BAYIRGA HARUNA"],"NDP":[0,"ABU FATAWU"]},"WA CENTRAL.":{"NDC":[0,"RASHIDA H PELPUO"],"NPP":[0,"TAHIRU ISSAHAKU"],"PPP":[0,"JAMES K SOHIMWINYE"],"PNC":[0,"BERNARD A MORNAH"],"CPP":[0,"ISSAHAQUE SULEMAN"],"NDP":[0,"ISSAHAQUE ALHASSAN"]},"DAFFIAMA/ BUSSIE/ ISSA":{"NDC":[0,"PUYAA MATHIAS ASOME"],"NPP":[0,"ROBERT EKOR DASSAH"],"PPP":[0,"IMORU CHARLES DOMATIEREH"],"PNC":[0,"BRAIMAH MATTHEW"],"NDP":[0,"TUBO VITALIS TIRIBONTA"]}};
+var parliamentaryConstituency = {"WA WEST":{"NDC":[13,"HON. JOSEPH YIELEH CHIREH"],"NPP":[0,"ADAMS NUHU"],"PPP":[0,"FELIX S PIGRU"],"NDP":[0,"DARE WARIBATA"]},"LAMBUSSIE- KARNI":{"NDC":[0,"DERY K EDWARD"],"NPP":[0,"JOHN DOUGHR"],"PPP":[0,"BEINPUO ERNEST"],"PNC":[0,"ALHASSAN ZAKARIA"],"CPP":[0,"DAVID MWINFOR DERIBAA"],"NDP":[0,"AMOAH BASING"],"INDP":[0,"ISASAKAH SAGITO"]},"NADOWLI KALEO":{"NDC":[0,"ALBAN SUMANA K BAGBIN"],"NPP":[0,"DR ROBINSON DAKUBU BOYE"],"PPP":[0,"NAA ANGANNGMINI"],"PNC":[0,"KPAN JUDE THADDEUS"],"NDP":[0,"ADAMA AMORA"]},"SISSALA EAST":{"NDC":[0,"SULEMANA ALIJATA"],"NPP":[0,"ISSAHAKU AMIDU CHINNIA"],"PPP":[0,"LURIWIRE FUSEINI KANTON"],"PNC":[0,"MOSES DANI BAAH"],"URP":[0,"ABDULAI AMORO"],"INDP1":[0,"MUSAH ISSAH"]},"WA EAST":{"NDC":[0,"AMEEN SALIFU"],"NPP":[0,"BAYON GODFREY TANGU"],"PPP":[0,"BAKULI MARIAMA"],"PNC":[0,"AMADU BABA"],"NDP":[0,"YAHAYA ABDUL- HANIF"]},"JIRAPA":{"NDC":[0,"FRANCIS BAWAANA DAKURA"],"NPP":[0,"EDWARD ABU BAKA DOMBO"],"PNC":[0,"FATI A SADU"],"CPP":[0,"MUONAA ELIZABETH"],"DPP":[0,"ANGSIEMA JOYCELYN"],"NDP":[0,"CALLISTUS DOODAA TANG"],"INDP1":[0,"PAUL DERIGUBAA"]},"LAWRA":{"NDC":[0,"HON. SAMSON ABU"],"NPP":[0,"ANTHONY N YOH KARBO"],"PPP":[0,"JOSEPH K. B. DABUO"],"CPP":[0,"DOMINIC KAMBOZIE"],"NDP":[0,"MARK WONONUO"],"INDP":[0,"PASCHAL BAYLONDERE"]},"NANDOM":{"NDC":[0,"DR. BENJAMIN KUMBUOR"],"NPP":[0,"AMBROSE DERY"],"NDP":[0,"ELVIS TAABAVI"]},"SISSALA WEST":{"NDC":[0,"AMIN AMIDU SULEMANA"],"NPP":[0,"PATRICK AL- HASSAN ADAMAH"],"PNC":[0,"BAYIRGA HARUNA"],"NDP":[0,"ABU FATAWU"]},"WA CENTRAL.":{"NDC":[0,"RASHIDA H PELPUO"],"NPP":[0,"TAHIRU ISSAHAKU"],"PPP":[0,"JAMES K SOHIMWINYE"],"PNC":[0,"BERNARD A MORNAH"],"CPP":[0,"ISSAHAQUE SULEMAN"],"NDP":[0,"ISSAHAQUE ALHASSAN"]},"DAFFIAMA/ BUSSIE/ ISSA":{"NDC":[0,"PUYAA MATHIAS ASOME"],"NPP":[0,"ROBERT EKOR DASSAH"],"PPP":[0,"IMORU CHARLES DOMATIEREH"],"PNC":[0,"BRAIMAH MATTHEW"],"NDP":[0,"TUBO VITALIS TIRIBONTA"]}};
 
 var resultCache = {};
 var baseUrl = 'http://election-map-gh.appspot.com/vote-data?';
@@ -348,8 +350,18 @@ function analytics( category, action, label, value, noninteraction ) {
 
 function renderConstituencies(region, result) {	
 	
-	var names = [];
+	var names = [], temp;
+	var state = {};
 	for (var k in result) {
+		temp = 0;
+		for (var q in result[k]) {
+			if (params.contest === 'president') {
+				temp += result[k][q];
+			} else {
+				temp += result[k][q][0];
+			}			
+		}
+		state[k] = temp > 0? 'active-region' : ''
 		names.push(k);
 	}	
 	names.sort(function(a, b){
@@ -387,7 +399,7 @@ function renderConstituencies(region, result) {
 			}
 			contentString = S(contentString,'<ul class="sublist">');
 		}
-		contentString = S(contentString, '<li>',names[i],'</li>');
+		contentString = S(contentString, '<li class="',state[names[i]],'">',names[i],'</li>');
 	}
 	contentString = S(contentString, '</ul></div></div>');
 	$body.append( contentString );	
