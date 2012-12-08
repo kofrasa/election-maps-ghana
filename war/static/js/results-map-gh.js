@@ -266,7 +266,7 @@ function getResultJSON( url, onSuccess, onError ) {
 				$('#spinner').hide();
 			} else {
 				setTimeout( function() {
-					getResultJSON( url );
+					getResultJSON( url, onSuccess, onError );
 				}, timeout );
 			}
 		}
