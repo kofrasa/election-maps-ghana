@@ -1,6 +1,6 @@
 var candidatesInfo = {
-	NDC: { color: '#FF1300', firstName: 'John Dramani', lastName: 'Mahama', fullName: 'John Dramani Mahama'},
-	NPP: { color: '#1700E8', firstName: 'Nana Addo Dankwa', lastName: 'Akufo-Addo', fullName: 'Nana Addo Dankwa Akufo-Addo'},
+	NDC: { color: '#FF0000', firstName: 'John Dramani', lastName: 'Mahama', fullName: 'John Dramani Mahama'},
+	NPP: { color: '#0000FF', firstName: 'Nana Addo Dankwa', lastName: 'Akufo-Addo', fullName: 'Nana Addo Dankwa Akufo-Addo'},
 	PPP: { color: '#E4Af95', firstName: 'Papa Kwesi', lastName: 'Nduom', fullName: 'Papa Kwesi Nduom'},
 	PNC: { color: '#20FF1F', firstName: 'Hassan', lastName: 'Ayariga', fullName: 'Hassan Ayariga'},
 	CPP: { color: '#8A5C2E', firstName: 'Abu Sakara', lastName: 'Foster', fullName: 'Abu Sakara Foster'},
