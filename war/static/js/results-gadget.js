@@ -19,6 +19,8 @@ var params = parseQuery(location.search);
 
 var opt = opt || {};
 
+opt.debug = false;
+
 opt.writeScript = function( url, nocache ) {
 	document.write(
 		'<script type="text/javascript" src="',
@@ -75,16 +77,16 @@ function T( name, args ) {
 }
 T.templates = {};
 
-//opt.writeScript( 'static/js/jquery-1.8.3.min.js', opt.nocache );
 opt.writeScript( '//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery' + ( opt.debug ? '.js' : '.min.js' ) );
 
 opt.writeScript(
 	'//maps.google.com/maps/api/js?v=3&sensor=false&language=' + params.hl + (
-	/(^|\.)election-maps-ghana.appspot.com/.test(location.hostname) ?
+	/(^|\.)election-map-gh.appspot.com/.test(location.hostname) ?
 		'&key=AIzaSyALGGJ7hXLfRs0Qer5nsteomzk5b212fqM' :
 		''
 	)
 );
+
 
 //opt.writeScript( 'static/js/underscore.js', opt.nocache );
 opt.writeScript(' http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js', opt.nochace);
@@ -95,6 +97,4 @@ opt.writeScript( 'static/js/results-templates-gh.js', opt.nocache );
 opt.writeScript( 'static/locale/lang-' + params.hl + '.js', opt.nocache );
 opt.writeScript( 'static/js/results-data-gh.js', true );
 opt.writeScript( 'static/js/results-map-gh.js', true );
-
-
 
