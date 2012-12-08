@@ -20,13 +20,19 @@ document.write(
 	'</style>'
 );
 
+//Analytics
+var _gaq = _gaq || [];
+_gaq.push([ '_setAccount', 'UA-36902519-1' ]);
+//_gaq.push([ '_setDomainName', '.election-maps.appspot.com' ]);
+_gaq.push([ '_trackPageview' ]);
+
 var DEBUG = false;
 var $body = $('body');
 var $window = $(window), ww = $window.width(), wh = $window.height();
 var mapPixBounds;
 var sidebarWidth = 340;
 opt.fontsize = '15px';
-opt.reloadTime = 60 * 1000;
+opt.reloadTime = 50 * 1000;
 
 document.write(
 	'<style type="text/css">',
@@ -171,14 +177,15 @@ document.write(
 		'body.ie7 #google-logo, body.ie7 #linkToMap { display:none; }',
 		'#testlabel { position:absolute; left: ', sidebarWidth + 32, 'px; top: 2px; font-size: 24px; font-weight:bold; color:red; text-shadow: 0 0 4px white, 0 0 8px white, 0 0 12px white, 0 0 12px white; }',
 		 // custom layouts
+		//'#subregion_list { width:100%; overflow:auto; overflow-x:hidden; }',
 		//'.candidate-area-patch { border-radius:30px;-webkit-border-radius:30px;-moz-border-radius:30px; }',
 		'tr.candidate-row:hover { background-color: #eeeeee; }',
-		'#subregion_div { min-width:815px; font-family:Helvetica; font-size:14px; display: none;',
-		'position:absolute; background:#fff; z-index:1001; }',
+		'#subregion_div { width:815px; font-family:Helvetica; font-size:14px; display: none;',
+		'position:absolute; background:#fff; z-index:1001;}',
 		'#subregion_title { padding: 10px; padding-left:15px; }',
 		'#subregion_title a { text-decoration:none; color:#111;}',
 		'#subregion_title a:hover { text-decoration:underline; }',
-		'#subregion ul { list-style: none; float: left; padding:0px 15px;',
+		'#subregion ul { list-style:none; float:left; padding:0px 15px; margin-top:5px;',
 			'border-right: solid #eeeeee thin; width:240px;}',
 		'#subregion li { list-style: none; word-wrap:break-word; color: #08C; padding:5px 5px;}',
 		'#subregion li:hover { background-color:#eee; cursor: pointer;}',
@@ -330,6 +337,15 @@ function loadResult( scope, region, callback ) {
 	);
 }
 
+function analytics( category, action, label, value, noninteraction ) {
+	//analytics.seen = analytics.seen || {};
+	//if( analytics.seen[path] ) return;
+	//analytics.seen[path] = true;
+	_gaq.push([ '_trackEvent',
+		category, action, label, value, noninteraction
+	]);
+}
+
 function renderConstituencies(region, result) {	
 	
 	var names = [];
@@ -468,6 +484,7 @@ function formatCandidatesConstituency() {
 	var region = currentFeature.geojsonProperties.ID.toLowerCase();
 	loadResult('constituency', region, function (result) {				
 		// aggregate results for each constituency	
+		analytics( params.contest, region, 'region');
 		renderConstituencies(region, result);
 	});	
 }
@@ -546,7 +563,7 @@ function contentTable() {
 				'<div id="auto-update" class="subtitle-text">',	
 					T('subtitle'),
 				'</div>',
-				'<div id="sidebar-results-header">',
+				'<div id="sidebar-results-header" class="scroller">',
 					
 				'</div>',
 			'</div>',
@@ -1092,16 +1109,22 @@ var $selectors;
 function initSelectors() {	
 	if (!$selectors) {
 		$selectors = $('#selectors a.button');
-		$selectors.bind('click', function( event ) {	
+		$selectors.bind('click', function( event ) {				
 			$selectors.removeClass( 'selected' );
 			$(this).addClass( 'selected' );
 			params.contest = this.id.split('-')[1];
+			analytics( params.contest, 'contest');
 			loadView();
 		});
 	}
 }
 
-$window
-.bind( 'load', loadView)
-.bind( 'resize', resizeViewOnly );
+$window.bind( 'load', loadView).bind( 'resize', resizeViewOnly );
 
+getScript( S(
+		location.protocol == 'https:' ? 'https://ssl' : 'http://www',
+		'.google-analytics.com/',
+		DEBUG ? 'u/ga_debug.js' : 'ga.js'
+	) );
+	
+analytics( 'map', 'load' );

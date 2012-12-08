@@ -11,7 +11,9 @@ var candidatesInfo = {
 	YPP: { color: '#FF33CC'},
 	NDP: {color: '#993333'},
 	DPP: {color: '#FF6666'},
-	IPP: {color: '#'}
+	IPP: {color: '#970026'},
+	URP: {color: '#FF7F00'},
+	URP: {color: '#B564D4'}
 }
 
 function strictCandidateSort(candidates){
@@ -120,8 +122,8 @@ function getTopCandidates( candidates, sortBy, max ) {
 		
 		// Sort in descending order and trim
 		top = top.reverse().slice( 0, max );
-		while( top.length  &&  ! top[top.length-1].votes && top.length >= 9)
-			top.pop();
+		//while( top.length  &&  ! top[top.length-1].votes && top.length >= 9)
+		//	top.pop();
 		
 		// Finally can compare each candidate with the topmost
 		if( top.length ) {
